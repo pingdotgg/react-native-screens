@@ -468,7 +468,9 @@ RNS_IGNORE_SUPER_CALL_END
     willChangeDisplayModeFrom:(UISplitViewControllerDisplayMode)fromDisplayMode
                            to:(UISplitViewControllerDisplayMode)toDisplayMode
 {
-  [_reactEventEmitter emitOnDisplayModeWillChangeFrom:fromDisplayMode to:toDisplayMode];
+  [_reactEventEmitter emitOnDisplayModeWillChangeFrom:fromDisplayMode
+                                                   to:toDisplayMode
+                                  horizontalSizeClass:controller.traitCollection.horizontalSizeClass];
 }
 
 - (void)splitHostControllerDidHideInspector:(RNSSplitHostController *)controller
