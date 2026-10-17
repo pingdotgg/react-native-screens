@@ -455,6 +455,15 @@ export interface ScreenProps extends ViewProps {
    */
   sheetGrabberVisible?: boolean | undefined;
   /**
+   * Requests horizontal bars instead of the vertical bar for modal, page-sheet,
+   * and form-sheet presentations on iPhone Duo. Defaults to `false`, preserving
+   * UIKit's automatic bar placement.
+   *
+   * @platform ios
+   * @supported iOS 27.1 or higher
+   */
+  sheetPrefersHorizontalBars?: boolean | undefined;
+  /**
    * The largest sheet detent for which a view underneath won't be dimmed.
    * Works only when `stackPresentation` is set to `formSheet`.
    *

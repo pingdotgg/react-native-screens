@@ -91,6 +91,11 @@ class FormSheetHostViewManager :
         view.prefersGrabberVisible = value
     }
 
+    override fun setPrefersHorizontalBars(
+        view: FormSheetHost,
+        value: Boolean,
+    ) = Unit // iOS-only bar placement preference.
+
     override fun setPreferredCornerRadius(
         view: FormSheetHost,
         value: Float,

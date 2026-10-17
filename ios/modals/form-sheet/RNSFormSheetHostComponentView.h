@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) BOOL isOpen;
 @property (nonatomic, readonly) BOOL prefersGrabberVisible;
+@property (nonatomic, readonly) BOOL prefersHorizontalBars;
 @property (nonatomic, readonly) CGFloat preferredCornerRadius;
 @property (nonatomic, readonly) NSInteger largestUndimmedDetentIndex;
 @property (nonatomic, readonly) NSInteger initialDetentIndex;

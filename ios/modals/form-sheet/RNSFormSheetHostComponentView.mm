@@ -1,4 +1,5 @@
 #import "RNSFormSheetHostComponentView.h"
+#import "RNSDefines.h"
 #import "RNSFormSheetContentController.h"
 #import "RNSFormSheetContentView.h"
 #import "RNSFormSheetContentWrapperComponentView.h"
@@ -36,6 +37,7 @@ namespace react = facebook::react;
   BOOL _isOpen;
   std::vector<double> _detents;
   BOOL _prefersGrabberVisible;
+  BOOL _prefersHorizontalBars;
   CGFloat _preferredCornerRadius;
   NSInteger _largestUndimmedDetentIndex;
   NSInteger _initialDetentIndex;
@@ -71,6 +73,7 @@ namespace react = facebook::react;
   _isOpen = NO;
   _detents = {};
   _prefersGrabberVisible = NO;
+  _prefersHorizontalBars = NO;
   _preferredCornerRadius = -1.0;
   _largestUndimmedDetentIndex = kRNSFormSheetAlwaysDimmed;
   _initialDetentIndex = 0;
@@ -272,6 +275,15 @@ namespace react = facebook::react;
   if (oldComponentProps.prefersGrabberVisible != newComponentProps.prefersGrabberVisible) {
     _prefersGrabberVisible = newComponentProps.prefersGrabberVisible;
     [_controller setNeedsAppearanceUpdate];
+  }
+
+  if (oldComponentProps.prefersHorizontalBars != newComponentProps.prefersHorizontalBars) {
+    _prefersHorizontalBars = newComponentProps.prefersHorizontalBars;
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+    if (@available(iOS 27.1, *)) {
+      [_controller setNeedsUpdateOfVerticalBarConfiguration];
+    }
+#endif
   }
 
   if (oldComponentProps.preferredCornerRadius != newComponentProps.preferredCornerRadius) {

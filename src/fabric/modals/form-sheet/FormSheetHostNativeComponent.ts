@@ -20,6 +20,7 @@ interface NativeProps extends ViewProps {
   isOpen?: CT.WithDefault<boolean, false>;
   detents?: CT.Double[] | undefined;
   prefersGrabberVisible?: CT.WithDefault<boolean, false>;
+  prefersHorizontalBars?: CT.WithDefault<boolean, false>;
   preferredCornerRadius?: CT.WithDefault<CT.Float, -1.0>;
   largestUndimmedDetentIndex?: CT.WithDefault<CT.Int32, -1>;
   initialDetentIndex?: CT.WithDefault<CT.Int32, 0>;
