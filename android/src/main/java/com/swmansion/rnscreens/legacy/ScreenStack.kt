@@ -34,6 +34,10 @@ class ScreenStack(
     private var childrenDrawingOrderStrategy: ChildrenDrawingOrderStrategy? = null
     private var disappearingTransitioningChildren: MutableList<View> = ArrayList()
 
+    // Android draws a leaving screen above the entering one until its tween ends. With no animation
+    // that tween is only a 20ms no-op kept for the transition events, so the screen is clipped out.
+    private var hidesDisappearingScreens = false
+
     var goingForward = false
 
     /**
@@ -257,6 +261,7 @@ class ScreenStack(
         createTransaction().let { transaction ->
             if (stackAnimation != null) {
                 transaction.setTweenAnimations(stackAnimation, shouldUseOpenAnimation)
+                hidesDisappearingScreens = stackAnimation === Screen.StackAnimation.NONE
             }
 
             // Remove all screens that are currently on stack, but should be dismissed, because they're
@@ -421,7 +426,16 @@ class ScreenStack(
     private fun performDraw(op: DrawingOp) {
         // Canvas parameter can not be null here https://developer.android.com/reference/android/view/ViewGroup#drawChild(android.graphics.Canvas,%20android.view.View,%20long)
         // So if we are passing null here, we would crash anyway
-        super.drawChild(op.canvas!!, op.child, op.drawingTime)
+        val canvas = op.canvas!!
+        if (hidesDisappearingScreens && disappearingTransitioningChildren.contains(op.child)) {
+            // Still drawn, so its tween advances and ends the transition.
+            canvas.save()
+            canvas.clipRect(0, 0, 0, 0)
+            super.drawChild(canvas, op.child, op.drawingTime)
+            canvas.restore()
+            return
+        }
+        super.drawChild(canvas, op.child, op.drawingTime)
     }
 
     // Can't use `drawingOpPool.removeLast` here due to issues with static name resolution in Android SDK 35+.
