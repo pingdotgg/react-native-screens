@@ -79,6 +79,10 @@ open class ScreenContainer(
         r: Int,
         b: Int,
     ) {
+        // A Fabric mount resizes the container before its screen changes are applied. Applying them
+        // first means a screen leaving in that mount is not resized, so its content keeps the size
+        // it was laid out at and fits at once if it comes back. Never inside a layout pass.
+        if (changed && !isInLayout) performUpdates()
         var i = 0
         val size = childCount
         while (i < size) {
