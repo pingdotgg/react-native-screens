@@ -13,6 +13,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.facebook.react.ReactRootView
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.UIManager
+import com.facebook.react.bridge.UIManagerListener
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.modules.core.ReactChoreographer
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -20,8 +23,10 @@ import com.swmansion.rnscreens.core.common.FragmentProviding
 import com.swmansion.rnscreens.core.containers.common.Container
 import com.swmansion.rnscreens.core.containers.common.ContainerItem
 import com.swmansion.rnscreens.core.containers.common.ParentContainerItemRegistry
+import com.swmansion.rnscreens.react.utils.getFabricUIManagerNotNull
 import com.swmansion.rnscreens.legacy.events.ScreenDismissedEvent
 
+@OptIn(UnstableReactNativeAPI::class)
 open class ScreenContainer(
     context: Context?,
 ) : ViewGroup(context),
@@ -48,6 +53,22 @@ open class ScreenContainer(
     private var parentScreenWrapper: ScreenFragmentWrapper? = null
 
     private val parentContainerRegistry = ParentContainerItemRegistry()
+
+    // Applies screen changes when the Fabric mount that made them finishes, before that frame is
+    // drawn. Otherwise the commit's other layout changes (a sidebar hiding, a pane resizing) are
+    // drawn a frame before the screen they were made for appears or goes away.
+    private val mountListener =
+        object : UIManagerListener {
+            override fun willDispatchViewUpdates(uiManager: UIManager) = Unit
+
+            override fun willMountItems(uiManager: UIManager) = Unit
+
+            override fun didMountItems(uiManager: UIManager) = performUpdates()
+
+            override fun didDispatchMountItems(uiManager: UIManager) = Unit
+
+            override fun didScheduleMountItems(uiManager: UIManager) = Unit
+        }
 
     override fun shouldDelayChildPressedState(): Boolean = false
 
@@ -285,6 +306,9 @@ open class ScreenContainer(
         super.onAttachedToWindow()
         parentContainerRegistry.attach(this)
         isAttached = true
+        UIManagerHelper
+            .getFabricUIManagerNotNull(context as ThemedReactContext)
+            .addUIManagerEventListener(mountListener)
         setupFragmentManager()
     }
 
@@ -331,6 +355,9 @@ open class ScreenContainer(
         parentScreenWrapper = null
         parentContainerRegistry.detach(this)
 
+        UIManagerHelper
+            .getFabricUIManagerNotNull(context as ThemedReactContext)
+            .removeUIManagerEventListener(mountListener)
         super.onDetachedFromWindow()
         isAttached = false
         // When fragment container view is detached we force all its children to be removed.
@@ -368,6 +395,7 @@ open class ScreenContainer(
         // and disappear before the transition completes.
         // The exception to this rule is `performUpdatesNow` which is triggered by actions
         // not connected to React view hierarchy changes, but rather internal events.
+        // `mountListener` runs the update when the mount finishes.
         needsUpdate = true
         (context as ThemedReactContext).reactApplicationContext.runOnUiQueueThread {
             // We schedule the update here because LayoutAnimations of `react-native-reanimated`
