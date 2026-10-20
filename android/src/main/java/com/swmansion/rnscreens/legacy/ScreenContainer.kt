@@ -38,6 +38,7 @@ open class ScreenContainer(
     protected var fragmentManager: FragmentManager? = null
     private var isAttached = false
     private var needsUpdate = false
+    private var hasDeferredChildLayout = false
     private var isLayoutEnqueued = false
     private val layoutCallback: Choreographer.FrameCallback =
         object : Choreographer.FrameCallback {
@@ -79,10 +80,18 @@ open class ScreenContainer(
         r: Int,
         b: Int,
     ) {
-        // A Fabric mount resizes the container before its screen changes are applied. Applying them
-        // first means a screen leaving in that mount is not resized, so its content keeps the size
-        // it was laid out at and fits at once if it comes back. Never inside a layout pass.
-        if (changed && !isInLayout) performUpdates()
+        // A Fabric mount resizes the container before it applies the mount's screen changes, which
+        // happens when the mount finishes. Laying out the screens waits for them, so a screen leaving
+        // in that mount is not resized and fits at once if it comes back.
+        if (changed && needsUpdate && !isInLayout) {
+            hasDeferredChildLayout = true
+            return
+        }
+        layoutChildren()
+    }
+
+    private fun layoutChildren() {
+        hasDeferredChildLayout = false
         var i = 0
         val size = childCount
         while (i < size) {
@@ -421,11 +430,13 @@ open class ScreenContainer(
 
     fun performUpdates() {
         if (!needsUpdate || !isAttached || fragmentManager == null || fragmentManager?.isDestroyed == true) {
+            if (hasDeferredChildLayout) layoutChildren()
             return
         }
         needsUpdate = false
         onUpdate()
         notifyContainerUpdate()
+        if (hasDeferredChildLayout) layoutChildren()
     }
 
     open fun onUpdate() {
