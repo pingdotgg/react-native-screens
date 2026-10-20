@@ -99,8 +99,18 @@ class RNSScreenComponentDescriptor final
           FrameCorrectionModes::Mode::FrameHeightCorrection);
       screenShadowNode.getFrameCorrectionModes().unset(
           FrameCorrectionModes::Mode::FrameOriginCorrection);
+      // A stack lays its screens out at its own full width, which Yoga already
+      // knows in this commit; native reports it back a frame or more later.
+      // Taking only the height from native keeps a resized stack's screens at
+      // its new width in the same commit, so their content isn't laid out
+      // first at the old width. Form sheets keep the native width, which
+      // Material caps on large screens.
+      const bool widthFollowsStack =
+          props->stackPresentation != RNSScreenStackPresentation::FormSheet;
       layoutableShadowNode.setSize(
-          Size{stateData.frameSize.width, stateData.frameSize.height});
+          Size{
+              widthFollowsStack ? YGUndefined : stateData.frameSize.width,
+              stateData.frameSize.height});
     } else if (
         stateData.frameSize.width == 0 && stateData.frameSize.height == 0) {
       // Reset YogaNode so it recalculates its layout. Useful for the case
