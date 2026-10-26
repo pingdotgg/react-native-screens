@@ -7,6 +7,8 @@ type GenericEmptyEvent = Readonly<{}>;
 export type DisplayModeWillChangeEvent = {
   currentDisplayMode: string;
   nextDisplayMode: string;
+  /** The Split host's horizontal size class when the display mode change begins. */
+  horizontalSizeClass: 'unspecified' | 'compact' | 'regular';
 };
 
 export type SplitDisplayModeButtonVisibility = 'always' | 'automatic' | 'never';
