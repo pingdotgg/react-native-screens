@@ -1,6 +1,7 @@
 package com.swmansion.rnscreens.legacy.stack.views
 
 import android.content.Context
+import android.view.Gravity
 import android.view.WindowInsets
 import android.view.animation.Animation
 import android.view.animation.AnimationSet
@@ -112,6 +113,23 @@ internal class ScreensCoordinatorLayout(
     }
 
     override fun shouldDelayChildPressedState(): Boolean = fragment.screen.usesFormSheetPresentation()
+
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        if (fragment.screen.usesFormSheetPresentation()) {
+            // Match the Material width used by the standalone FormSheet dialog.
+            val params = fragment.screen.layoutParams as LayoutParams
+            params.width =
+                minOf(
+                    MeasureSpec.getSize(widthMeasureSpec),
+                    resources.getDimensionPixelSize(com.google.android.material.R.dimen.material_bottom_sheet_max_width),
+                )
+            params.gravity = Gravity.CENTER_HORIZONTAL
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
 
     override fun onLayout(
         changed: Boolean,
