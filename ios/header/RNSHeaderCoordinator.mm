@@ -594,10 +594,13 @@
 
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(27_0)
   if (@available(iOS 27.0, *)) {
-    UIBarMinimization *minimization = [UIBarMinimization new];
-    minimization.minimizationBehavior = _configDataProvider.minimizationBehavior;
-    minimization.restorationBehavior = _configDataProvider.restorationBehavior;
-    navItem.navigationBarMinimization = minimization;
+    // iOS 27.0 betas 24A5355q and 24A5370h pass the availability check but lack this setter.
+    if ([navItem respondsToSelector:@selector(setNavigationBarMinimization:)]) {
+      UIBarMinimization *minimization = [UIBarMinimization new];
+      minimization.minimizationBehavior = _configDataProvider.minimizationBehavior;
+      minimization.restorationBehavior = _configDataProvider.restorationBehavior;
+      navItem.navigationBarMinimization = minimization;
+    }
   }
 #endif // Check for iOS >= 27
 
