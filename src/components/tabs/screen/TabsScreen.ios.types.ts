@@ -354,6 +354,20 @@ export interface TabsScreenPropsIOS {
    */
   overrideScrollViewContentInsetAdjustmentBehavior?: boolean | undefined;
   /**
+   * @summary Puts a screen that hasn't been selected yet into the window for a moment, hidden
+   * behind the selected one.
+   *
+   * On iOS 26, bar items fade in the first time they enter a window. Prewarming a screen whose
+   * header is mounted lets that happen out of sight, so its first visit shows the header at once.
+   * Items rebuilt later fade in again, so raise the value after each header change to prewarm
+   * again. Each new positive value prewarms; the screen gets no appearance events.
+   *
+   * @default 0
+   *
+   * @platform ios
+   */
+  prewarmRequest?: number | undefined;
+  /**
    * @summary Allows to override system appearance for the tab bar.
    *
    * Does not support dynamic changes to the prop value for the currently visible screen.
