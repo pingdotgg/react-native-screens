@@ -371,7 +371,12 @@ static void rns_pushViewController(__unsafe_unretained id self,
   [self progressNavigationState:screenKey withOrigin:actionOrigin];
 
   if (![self isScreenControllerCurrentlySelected:nextSelectedViewController]) {
-    [self applySelectedScreenController:nextSelectedViewController];
+    // A tab shown for the first time attaches its stack and builds its header on screen.
+    // Laying it out here keeps UIKit from fading the bar's title in on that first visit.
+    [UIView performWithoutAnimation:^{
+      [self applySelectedScreenController:nextSelectedViewController];
+      [self.view layoutIfNeeded];
+    }];
   }
 
   return YES;
