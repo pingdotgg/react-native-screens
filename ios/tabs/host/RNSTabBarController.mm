@@ -70,6 +70,7 @@ static void rns_pushViewController(__unsafe_unretained id self,
 
 @implementation RNSTabBarController {
   NSArray<RNSTabsScreenViewController *> *_Nullable _tabScreenControllers;
+  NSMapTable<UIViewController *, NSNumber *> *_Nullable _prewarmGenerations;
 
   /// Controllers currently installed in UIKit (see `installScreenControllers:animated:`).
   /// On the UITab path `UITabBarController.viewControllers` is empty once `tabs` is set,
@@ -345,6 +346,48 @@ static void rns_pushViewController(__unsafe_unretained id self,
   [self updateTabBarAppearanceIfNeeded];
   [self updateTabBarA11yIfNeeded];
   [self updateOrientationIfNeeded];
+}
+
+- (void)prewarmScreenController:(UIViewController *)controller
+{
+  if (_prewarmGenerations == nil) {
+    _prewarmGenerations = [NSMapTable weakToStrongObjectsMapTable];
+  }
+  // After the mounting transaction, so the header it applied is in place.
+  __weak RNSTabBarController *weakSelf = self;
+  __weak UIViewController *weakController = controller;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RNSTabBarController *strongSelf = weakSelf;
+    UIViewController *screen = weakController;
+    if (strongSelf == nil || screen == nil || strongSelf.view.window == nil ||
+        strongSelf.selectedViewController == screen) {
+      return;
+    }
+    UIView *view = screen.view;
+    BOOL prewarming = view.superview == strongSelf.view;
+    if (view.window != nil && !prewarming) {
+      return;
+    }
+    NSUInteger generation = [[strongSelf->_prewarmGenerations objectForKey:screen] unsignedIntegerValue] + 1;
+    [strongSelf->_prewarmGenerations setObject:@(generation) forKey:screen];
+    if (!prewarming) {
+      view.frame = strongSelf.view.bounds;
+      view.accessibilityElementsHidden = YES;
+      [strongSelf.view insertSubview:view atIndex:0];
+    }
+    [view layoutIfNeeded];
+    // Long enough for the bar items' first-entry fade (~14 frames) to finish; a later request
+    // while still in the window restarts it.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      if ([[strongSelf->_prewarmGenerations objectForKey:screen] unsignedIntegerValue] != generation) {
+        return;
+      }
+      view.accessibilityElementsHidden = NO;
+      if (view.superview == strongSelf.view && strongSelf.selectedViewController != screen) {
+        [view removeFromSuperview];
+      }
+    });
+  });
 }
 
 /**

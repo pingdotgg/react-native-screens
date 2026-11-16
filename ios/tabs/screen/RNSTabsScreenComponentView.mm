@@ -325,6 +325,11 @@ RNS_IGNORE_SUPER_CALL_END
     _preventNativeSelection = newComponentProps.preventNativeSelection;
   }
 
+  if (newComponentProps.prewarmRequest > 0 &&
+      newComponentProps.prewarmRequest != oldComponentProps.prewarmRequest) {
+    [[self findTabBarController] prewarmScreenController:_controller];
+  }
+
   if (newComponentProps.overrideScrollViewContentInsetAdjustmentBehavior !=
       oldComponentProps.overrideScrollViewContentInsetAdjustmentBehavior) {
     _overrideScrollViewContentInsetAdjustmentBehavior =
