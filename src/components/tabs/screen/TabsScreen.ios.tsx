@@ -79,7 +79,8 @@ function TabsScreen(props: TabsScreenProps) {
       overrideScrollViewContentInsetAdjustmentBehavior={
         ios?.overrideScrollViewContentInsetAdjustmentBehavior
       }
-      prewarmRequest={ios?.prewarmRequest}>
+      prewarmRequest={ios?.prewarmRequest}
+      contentReady={ios?.contentReady}>
       {children}
     </TabsScreenIOSNativeComponent>
   );

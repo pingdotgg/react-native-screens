@@ -172,4 +172,9 @@
   return self.tabScreenComponentView.preventNativeSelection;
 }
 
+- (BOOL)isContentReady
+{
+  return self.tabScreenComponentView.contentReady;
+}
+
 @end

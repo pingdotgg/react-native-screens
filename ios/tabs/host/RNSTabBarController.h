@@ -83,6 +83,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prewarmScreenController:(nonnull UIViewController *)controller;
 
 /**
+ * Removes the snapshot covering `controller` after a selection, once its content has rendered.
+ */
+- (void)screenControllerContentDidBecomeReady:(nonnull UIViewController *)controller;
+
+/**
  * Apply any pending invalidations and state updates in a single coordinated pass.
  * No-op when nothing is dirty.
  */
