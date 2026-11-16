@@ -368,6 +368,16 @@ export interface TabsScreenPropsIOS {
    */
   prewarmRequest?: number | undefined;
   /**
+   * @summary Whether the screen has rendered what it shows when selected. Defaults to `true`.
+   *
+   * @description While `false`, selecting the screen keeps a snapshot of the previously selected
+   * screen over it until it becomes `true` (or a second passes), so a screen that renders on
+   * selection never shows half-built.
+   *
+   * @platform ios
+   */
+  contentReady?: boolean | undefined;
+  /**
    * @summary Allows to override system appearance for the tab bar.
    *
    * Does not support dynamic changes to the prop value for the currently visible screen.

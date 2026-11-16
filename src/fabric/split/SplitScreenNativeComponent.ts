@@ -24,6 +24,7 @@ interface NativeProps extends ViewProps {
   column?: CT.WithDefault<CT.Int32, -1>;
   activityMode?: CT.WithDefault<ActivityMode, 'attached'>;
   screenKey?: string | undefined;
+  animatesPush?: CT.WithDefault<boolean, true>;
 
   // Events
   onWillAppear?: CT.DirectEventHandler<GenericEmptyEvent> | undefined;

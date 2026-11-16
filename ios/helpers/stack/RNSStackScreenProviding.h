@@ -32,6 +32,10 @@ typedef NS_ENUM(int, RNSStackScreenActivityMode) {
 
 - (nullable RNSHeaderCoordinator *)headerCoordinator;
 
+@optional
+/** @brief Whether pushing the screen animates. Screens that don't implement it always animate. */
+- (BOOL)animatesPush;
+
 @end
 
 NS_ASSUME_NONNULL_END

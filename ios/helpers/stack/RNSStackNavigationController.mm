@@ -299,6 +299,11 @@
   [_pendingPopOperations addObject:operation];
 }
 
+- (BOOL)animatesPushOperation:(RNSPushOperation *)op
+{
+  return op == nil || ![op.stackScreen respondsToSelector:@selector(animatesPush)] || [op.stackScreen animatesPush];
+}
+
 - (void)performContainerUpdateIfNeeded
 {
   // NOTE: We consider UINavigationController.viewControllers to be part of
@@ -330,7 +335,7 @@
       [controllers addObject:op.stackScreen.controller];
     }
     [self prepareToolbarForController:controllers.lastObject];
-    [self setViewControllers:controllers animated:YES];
+    [self setViewControllers:controllers animated:[self animatesPushOperation:_pendingPushOperations.lastObject]];
   } else {
     for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
       RCTAssert(
@@ -351,7 +356,8 @@
         // The first screen is the root, so the placeholder must not appear in its back stack.
         [self setViewControllers:@[ op.stackScreen.controller ] animated:NO];
       } else {
-        [self pushViewController:op.stackScreen.controller animated:op == _pendingPushOperations.lastObject];
+        [self pushViewController:op.stackScreen.controller
+                        animated:op == _pendingPushOperations.lastObject && [self animatesPushOperation:op]];
       }
     }
   }
