@@ -22,9 +22,9 @@
 
 @interface RNSSearchBar :
 #if defined(__cplusplus)
-    RCTViewComponentView <UISearchBarDelegate, RCTRNSSearchBarViewProtocol>
+    RCTViewComponentView <UISearchBarDelegate, UISearchControllerDelegate, RCTRNSSearchBarViewProtocol>
 #else
-    UIView <UISearchBarDelegate>
+    UIView <UISearchBarDelegate, UISearchControllerDelegate>
 #endif
 
 @property (nonatomic, weak, nullable) id<RNSSearchBarNavigationItemDelegate> navigationItemDelegate;
@@ -35,6 +35,10 @@
 @property (nonatomic) BOOL allowToolbarIntegration;
 
 @property (nonatomic, retain) UISearchController *controller;
+
+/// Deactivates a search controller for a reason other than the user closing search, such as its
+/// screen disappearing, so its search bar does not report the dismissal as a cancel.
++ (void)deactivateSearchController:(UISearchController *)searchController;
 
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(16_0) && !TARGET_OS_TV
 - (UINavigationItemSearchBarPlacement)placementAsUINavigationItemSearchBarPlacement API_AVAILABLE(ios(16.0))

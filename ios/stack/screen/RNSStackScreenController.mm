@@ -3,6 +3,7 @@
 #import "RNSContainerItemSupport.h"
 #import "RNSHeaderCoordinator.h"
 #import "RNSLog.h"
+#import "RNSSearchBar.h"
 #import "RNSStackHostComponentView.h"
 #import "RNSStackNavigationController.h"
 #import "RNSStackScreenComponentEventEmitter.h"
@@ -78,7 +79,7 @@
 #if !TARGET_OS_TV
   UISearchController *searchController = self.navigationItem.searchController;
   if (searchController.isActive) {
-    searchController.active = NO;
+    [RNSSearchBar deactivateSearchController:searchController];
   }
 #endif // !TARGET_OS_TV
   [[self reactEventEmitter] emitOnWillDisappear];

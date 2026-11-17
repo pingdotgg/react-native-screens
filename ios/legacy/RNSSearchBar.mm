@@ -105,10 +105,15 @@ static id RNSAddObserverRemovedWithSearchField(
 
 #endif // !TARGET_OS_TV
 
+// Set while React Native Screens deactivates a search controller itself. Main thread only.
+static BOOL RNSDeactivatingSearchController = NO;
+
 @implementation RNSSearchBar {
   UISearchController *_controller;
   UIColor *_textColor;
   BOOL _focusRequested;
+  // Whether this presentation already reported a cancel, so its dismissal does not report another.
+  BOOL _cancelEmitted;
 
   // We use those booleans to log a warning if user attempts to restore
   // default behavior after setting explicit value for the prop.
@@ -155,6 +160,7 @@ static id RNSAddObserverRemovedWithSearchField(
 #endif
 
   _controller.searchBar.delegate = self;
+  _controller.delegate = self;
 
   _isObscureBackgroundSet = NO;
   _isHideNavigationBarSet = NO;
@@ -407,10 +413,43 @@ static id RNSAddObserverRemovedWithSearchField(
   [self resignFirstResponder];
   [self hideCancelButton];
 
+  _cancelEmitted = YES;
   [self emitOnCancelButtonPressEvent];
   [self emitOnChangeTextEventWithText:_controller.searchBar.text];
 }
+
+- (void)willPresentSearchController:(UISearchController *)searchController
+{
+  _cancelEmitted = NO;
+}
+
+- (void)willDismissSearchController:(UISearchController *)searchController
+{
+  // iOS 27's integrated search closes through its own button, which deactivates the controller and
+  // clears its text without calling searchBarCancelButtonClicked:. Report that as a cancel, but not a
+  // dismissal Screens or JS requested, or one caused by a transition away from this screen.
+  if (@available(iOS 27.0, *)) {
+    UIViewController *presenter = searchController.presentingViewController;
+    if (!_cancelEmitted && !RNSDeactivatingSearchController && presenter.viewIfLoaded.window != nil &&
+        presenter.transitionCoordinator == nil) {
+      [self searchBarCancelButtonClicked:searchController.searchBar];
+    }
+  }
+}
+
+- (void)didDismissSearchController:(UISearchController *)searchController
+{
+  _cancelEmitted = NO;
+}
 #endif // !TARGET_OS_TV
+
++ (void)deactivateSearchController:(UISearchController *)searchController
+{
+  BOOL wasDeactivating = RNSDeactivatingSearchController;
+  RNSDeactivatingSearchController = YES;
+  searchController.active = NO;
+  RNSDeactivatingSearchController = wasDeactivating;
+}
 
 - (void)blur
 {
@@ -467,14 +506,18 @@ static id RNSAddObserverRemovedWithSearchField(
   }
   // Search can remain expanded after the keyboard is dismissed or its host reappears.
   // Becoming first responder belongs to the separate focus command.
-  _controller.active = active;
+  if (active) {
+    _controller.active = YES;
+  } else {
+    [RNSSearchBar deactivateSearchController:_controller];
+  }
 }
 
 - (void)cancelSearch
 {
 #if !TARGET_OS_TV
   [self searchBarCancelButtonClicked:_controller.searchBar];
-  _controller.active = NO;
+  [RNSSearchBar deactivateSearchController:_controller];
 #endif
 }
 
