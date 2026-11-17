@@ -614,7 +614,7 @@
   UISearchController *searchController = searchBar.controller;
   if (navItem.searchController != searchController) {
     // Dismiss the old presentation before releasing or replacing its controller.
-    navItem.searchController.active = NO;
+    [RNSSearchBar deactivateSearchController:navItem.searchController];
     navItem.searchController = searchController;
   }
 
