@@ -456,8 +456,8 @@ export interface ScreenProps extends ViewProps {
    */
   sheetGrabberVisible?: boolean | undefined;
   /**
-   * Requests horizontal bars instead of the vertical bar for modal, page-sheet,
-   * and form-sheet presentations on iPhone Duo. Defaults to `false`, preserving
+   * Requests horizontal bars instead of the vertical bar for modal, full-screen
+   * modal, page-sheet, and form-sheet presentations on iPhone Duo. Defaults to `false`, preserving
    * UIKit's automatic bar placement.
    *
    * @platform ios
