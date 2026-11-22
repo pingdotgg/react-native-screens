@@ -13,6 +13,7 @@ type GenericEmptyEvent = Readonly<{}>;
 type DisplayModeWillChangeEvent = {
   currentDisplayMode: string;
   nextDisplayMode: string;
+  horizontalSizeClass: 'unspecified' | 'compact' | 'regular';
 };
 
 type SplitViewDisplayModeButtonVisibility = 'always' | 'automatic' | 'never';

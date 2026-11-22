@@ -20,11 +20,27 @@
 
 - (BOOL)emitOnDisplayModeWillChangeFrom:(UISplitViewControllerDisplayMode)currentDisplayMode
                                      to:(UISplitViewControllerDisplayMode)nextDisplayMode
+                    horizontalSizeClass:(UIUserInterfaceSizeClass)horizontalSizeClass
 {
   if (_reactEventEmitter != nullptr) {
+    using EventSizeClass = react::RNSSplitHostEventEmitter::OnDisplayModeWillChangeHorizontalSizeClass;
+    EventSizeClass eventSizeClass;
+    switch (horizontalSizeClass) {
+      case UIUserInterfaceSizeClassCompact:
+        eventSizeClass = EventSizeClass::Compact;
+        break;
+      case UIUserInterfaceSizeClassRegular:
+        eventSizeClass = EventSizeClass::Regular;
+        break;
+      case UIUserInterfaceSizeClassUnspecified:
+      default:
+        eventSizeClass = EventSizeClass::Unspecified;
+        break;
+    }
     _reactEventEmitter->onDisplayModeWillChange(
         {.currentDisplayMode = rnscreens::conversion::UISplitViewControllerDisplayModeToString(currentDisplayMode),
-         .nextDisplayMode = rnscreens::conversion::UISplitViewControllerDisplayModeToString(nextDisplayMode)});
+         .nextDisplayMode = rnscreens::conversion::UISplitViewControllerDisplayModeToString(nextDisplayMode),
+         .horizontalSizeClass = eventSizeClass});
     return YES;
   } else {
     RCTLogWarn(@"[RNScreens] Skipped OnDisplayModeWillChange event emission due to nullish emitter");
