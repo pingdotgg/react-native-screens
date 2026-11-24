@@ -85,6 +85,10 @@ interface NativeCommands {
     flag: boolean,
   ) => void;
   setText: (instance: React.ComponentRef<ComponentType>, text: string) => void;
+  setActive: (
+    instance: React.ComponentRef<ComponentType>,
+    active: boolean,
+  ) => void;
   cancelSearch: (instance: React.ComponentRef<ComponentType>) => void;
 }
 
@@ -95,6 +99,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
     'clearText',
     'toggleCancelButton',
     'setText',
+    'setActive',
     'cancelSearch',
   ],
 });

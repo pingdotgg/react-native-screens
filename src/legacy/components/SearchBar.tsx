@@ -50,6 +50,11 @@ function SearchBar(props: SearchBarProps) {
         NativeSearchBarCommands.setText(instance, text),
       );
     },
+    setActive: (active: boolean) => {
+      _callWithNativeInstance(instance =>
+        NativeSearchBarCommands.setActive(instance, active),
+      );
+    },
     cancelSearch: () => {
       _callWithNativeInstance(instance =>
         NativeSearchBarCommands.cancelSearch(instance),

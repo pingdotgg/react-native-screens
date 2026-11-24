@@ -460,6 +460,16 @@ static id RNSAddObserverRemovedWithSearchField(
   [_controller.searchBar setText:text];
 }
 
+- (void)setActive:(BOOL)active
+{
+  if (!active) {
+    _focusRequested = NO;
+  }
+  // Search can remain expanded after the keyboard is dismissed or its host reappears.
+  // Becoming first responder belongs to the separate focus command.
+  _controller.active = active;
+}
+
 - (void)cancelSearch
 {
 #if !TARGET_OS_TV

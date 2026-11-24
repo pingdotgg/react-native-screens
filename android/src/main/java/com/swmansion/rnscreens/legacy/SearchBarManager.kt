@@ -171,6 +171,11 @@ class SearchBarManager :
         view?.handleCancelSearchJsRequest()
     }
 
+    override fun setActive(
+        view: SearchBarView?,
+        active: Boolean,
+    ) = Unit
+
     // iOS only
 
     override fun setPlacement(
