@@ -56,6 +56,7 @@ export type {
   // iOS
   StackPlatformIconIOS,
   StackHeaderBackButtonDisplayModeIOS,
+  StackHeaderNavigationItemStyleIOS,
   StackHeaderMinimizationBehaviorIOS,
   StackHeaderRestorationBehaviorIOS,
   StackHeaderSafeAreaAdjustmentIOS,

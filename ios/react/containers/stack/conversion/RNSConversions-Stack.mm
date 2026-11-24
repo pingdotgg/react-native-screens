@@ -70,6 +70,21 @@ UINavigationItemBackButtonDisplayModeFromReactRNSStackHeaderConfigIOSBackButtonD
   }
 }
 
+#if !TARGET_OS_TV
+UINavigationItemStyle UINavigationItemStyleFromReactRNSStackHeaderConfigIOSNavigationItemStyle(
+    react::RNSStackHeaderConfigIOSNavigationItemStyle style)
+{
+  switch (style) {
+    case react::RNSStackHeaderConfigIOSNavigationItemStyle::Navigator:
+      return UINavigationItemStyleNavigator;
+    case react::RNSStackHeaderConfigIOSNavigationItemStyle::Browser:
+      return UINavigationItemStyleBrowser;
+    case react::RNSStackHeaderConfigIOSNavigationItemStyle::Editor:
+      return UINavigationItemStyleEditor;
+  }
+}
+#endif // !TARGET_OS_TV
+
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_VISION && !TARGET_OS_TV
 
 UIBarMinimizationBehavior UIBarMinimizationBehaviorFromReactRNSStackHeaderConfigIOSMinimizationBehavior(

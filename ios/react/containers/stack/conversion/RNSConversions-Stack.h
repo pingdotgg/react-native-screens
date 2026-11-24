@@ -32,6 +32,13 @@ UINavigationItemBackButtonDisplayMode
 UINavigationItemBackButtonDisplayModeFromReactRNSStackHeaderConfigIOSBackButtonDisplayMode(
     react::RNSStackHeaderConfigIOSBackButtonDisplayMode displayMode);
 
+#if !TARGET_OS_TV
+UINavigationItemStyle
+UINavigationItemStyleFromReactRNSStackHeaderConfigIOSNavigationItemStyle(
+    react::RNSStackHeaderConfigIOSNavigationItemStyle style)
+    API_AVAILABLE(ios(16.0));
+#endif // !TARGET_OS_TV
+
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_VISION && !TARGET_OS_TV
 
 API_AVAILABLE(ios(27.0))

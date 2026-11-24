@@ -328,6 +328,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 
 #if !TARGET_OS_TV
   if (@available(iOS 16.0, *)) {
+    navItem.style = UINavigationItemStyleNavigator;
     navItem.titleMenuProvider = nil;
   }
 #endif // !TARGET_OS_TV
@@ -469,6 +470,28 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 - (void)applyConfigPropertiesForController:(RNSStackScreenController *)controller
 {
   UINavigationItem *navItem = controller.navigationItem;
+
+#if !TARGET_OS_TV
+  if (@available(iOS 16.0, *)) {
+    UINavigationItemStyle style = _configDataProvider.navigationItemStyle;
+    if (navItem.style != style) {
+      navItem.style = style;
+      if (@available(iOS 26.0, *)) {
+        // The style setter does not invalidate an already visible bar on iOS 26.
+        // Reapplying its title content makes UIKit recompute the layout without
+        // rebuilding the header items or their menu state.
+        UIView *titleView = navItem.titleView;
+        if (titleView != nil) {
+          navItem.titleView = nil;
+          navItem.titleView = titleView;
+        } else {
+          // A nonempty temporary title also invalidates a bar with no title.
+          navItem.title = navItem.title.length == 0 ? @" " : nil;
+        }
+      }
+    }
+  }
+#endif // !TARGET_OS_TV
 
   navItem.title = _configDataProvider.title;
   navItem.standardAppearance = _configDataProvider.standardAppearance;

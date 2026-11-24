@@ -64,6 +64,11 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   _subtitle = nil;
   _hidden = NO;
   _backButtonHidden = NO;
+#if !TARGET_OS_TV
+  if (@available(iOS 16.0, *)) {
+    _navigationItemStyle = UINavigationItemStyleNavigator;
+  }
+#endif // !TARGET_OS_TV
   _largeTitle = nil;
   _largeSubtitle = nil;
   _largeTitleEnabled = NO;
@@ -414,6 +419,16 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   if (oldHeaderProps.backButtonHidden != newHeaderProps.backButtonHidden) {
     _backButtonHidden = newHeaderProps.backButtonHidden;
   }
+
+#if !TARGET_OS_TV
+  if (@available(iOS 16.0, *)) {
+    if (oldHeaderProps.navigationItemStyle != newHeaderProps.navigationItemStyle) {
+      _navigationItemStyle =
+          rnscreens::conversion::UINavigationItemStyleFromReactRNSStackHeaderConfigIOSNavigationItemStyle(
+              newHeaderProps.navigationItemStyle);
+    }
+  }
+#endif // !TARGET_OS_TV
 
   if (oldHeaderProps.largeTitle != newHeaderProps.largeTitle) {
     _largeTitle = RCTNSStringFromStringNilIfEmpty(newHeaderProps.largeTitle);

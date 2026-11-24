@@ -55,6 +55,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
     largeTitle,
     largeSubtitle,
     largeTitleEnabled,
+    navigationItemStyle,
     prompt,
     minimizationBehavior,
     restorationBehavior,
@@ -163,6 +164,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
       backButtonTitle={backButtonTitle}
       backButtonDisplayMode={backButtonDisplayMode}
       backButtonMenuEnabled={backButtonMenuEnabled}
+      navigationItemStyle={navigationItemStyle}
       largeTitle={largeTitle}
       largeSubtitle={largeSubtitle}
       largeTitleEnabled={!!largeTitleEnabled}
