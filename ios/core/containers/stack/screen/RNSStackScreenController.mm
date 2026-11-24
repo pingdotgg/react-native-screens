@@ -57,6 +57,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
   [super viewDidAppear:animated];
+  [self.headerCoordinator restoreDetachedTitleView];
   [_delegate viewControllerViewDidAppear:self];
 }
 

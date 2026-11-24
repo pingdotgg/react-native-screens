@@ -74,6 +74,23 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   [navController.navigationBarCoordinator setHidden:hidden forNavigationController:navController animated:animated];
 }
 
+- (void)restoreDetachedTitleView
+{
+  RNSStackNavigationController *navController = [self getNavigationController];
+  if (_configDataProvider == nil || navController == nil || navController.topViewController != _screenController) {
+    return;
+  }
+
+  // A screen that returns to the top of a collapsed split column while its tab is hidden keeps its title view,
+  // but the bar shows an empty title in its place. Setting the view again makes the bar host it.
+  UINavigationItem *navItem = _screenController.navigationItem;
+  UIView *titleView = navItem.titleView;
+  if (titleView != nil && titleView.window == nil && !navController.navigationBarHidden) {
+    navItem.titleView = nil;
+    navItem.titleView = titleView;
+  }
+}
+
 - (void)rebuild
 {
   if (_configDataProvider == nil) {
