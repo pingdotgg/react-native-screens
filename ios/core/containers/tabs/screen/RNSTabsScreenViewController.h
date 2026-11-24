@@ -50,6 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tabScreenOrientationHasChanged;
 
 /**
+ * Tell the controller that the tab screen it owns asked to be prewarmed: put into the window for a moment, behind the
+ * selected screen, so that its bar items are in place on its first visit.
+ */
+- (void)tabScreenPrewarmRequested;
+
+/**
  * Tell the controller that the tab item related to this controller has been selected again after being presented.
  * Returns boolean indicating whether the action has been handled.
  */

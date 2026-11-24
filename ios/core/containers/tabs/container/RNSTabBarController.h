@@ -186,6 +186,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setProminentScreenKey:(nullable NSString *)screenKey;
 
 /**
+ * Puts a never-shown screen's view into the window behind the selected one for a moment, without
+ * appearance events. iOS 26 fades bar items in on their first window entry; this lets that happen
+ * out of sight.
+ */
+- (void)prewarmScreenController:(nonnull UIViewController *)controller;
+
+/**
  * Idempotent teardown. Releases observer references and any retained host references.
  * Called by the host on view lifecycle end.
  */

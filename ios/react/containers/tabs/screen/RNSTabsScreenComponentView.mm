@@ -347,6 +347,10 @@ RNS_IGNORE_SUPER_CALL_END
     _preventNativeSelection = newComponentProps.preventNativeSelection;
   }
 
+  if (newComponentProps.prewarmRequest > 0 && newComponentProps.prewarmRequest != oldComponentProps.prewarmRequest) {
+    [_controller tabScreenPrewarmRequested];
+  }
+
   if (newComponentProps.overrideScrollViewContentInsetAdjustmentBehavior !=
       oldComponentProps.overrideScrollViewContentInsetAdjustmentBehavior) {
     _overrideScrollViewContentInsetAdjustmentBehavior =

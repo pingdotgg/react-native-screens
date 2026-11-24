@@ -39,6 +39,11 @@
   [[self findTabBarController] setNeedsOrientationUpdate:true];
 }
 
+- (void)tabScreenPrewarmRequested
+{
+  [[self findTabBarController] prewarmScreenController:self];
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
   [super viewWillAppear:animated];

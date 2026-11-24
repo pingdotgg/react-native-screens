@@ -126,6 +126,7 @@ export interface NativeProps extends ViewProps {
   // Control
   screenKey: string;
   preventNativeSelection?: CT.WithDefault<boolean, false>;
+  prewarmRequest?: CT.WithDefault<CT.Int32, 0>;
 
   // General
   title?: string | undefined | null;
