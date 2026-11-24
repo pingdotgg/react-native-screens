@@ -101,6 +101,12 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   // UIKit requires the search controller before its placement item is created.
   [self applyConfigPropertiesForController:controller];
 
+  // UIKit fades a bar item in each time a new one enters the window. Items rebuilt here reuse the button already
+  // shown for the same id when only its contents changed, so the bar does not fade it in again.
+  NSDictionary<NSString *, UIBarButtonItem *> *previousItemsByItemId = [_barButtonItemsByItemId copy];
+  NSSet<UIBarButtonItem *> *previousBarItems =
+      [NSSet setWithArray:[_leadingBarButtonItems arrayByAddingObjectsFromArray:_trailingBarButtonItems]];
+
   [_leadingBarButtonItems removeAllObjects];
   [_trailingBarButtonItems removeAllObjects];
   [_toolbarBarButtonItems removeAllObjects];
@@ -117,10 +123,14 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
 
       switch (item.placement) {
         case RNSHeaderItemPlacementLeading:
-          [_leadingBarButtonItems addObject:[self buildBarButtonItemForItem:item]];
+          [_leadingBarButtonItems addObject:[self buildBarItemForItem:item
+                                                          reusingItem:previousItemsByItemId[item.itemId]
+                                                            fromItems:previousBarItems]];
           break;
         case RNSHeaderItemPlacementTrailing:
-          [_trailingBarButtonItems addObject:[self buildBarButtonItemForItem:item]];
+          [_trailingBarButtonItems addObject:[self buildBarItemForItem:item
+                                                           reusingItem:previousItemsByItemId[item.itemId]
+                                                             fromItems:previousBarItems]];
           break;
         case RNSHeaderItemPlacementToolbar:
 #if !TARGET_OS_TV
@@ -252,7 +262,14 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
 
   switch (targetItem.placement) {
     case RNSHeaderItemPlacementLeading: {
-      UIBarButtonItem *newBarButtonItem = [self buildBarButtonItemForItem:targetItem];
+      NSSet<UIBarButtonItem *> *shownItems = [NSSet setWithArray:_leadingBarButtonItems];
+      UIBarButtonItem *newBarButtonItem = [self buildBarItemForItem:targetItem
+                                                        reusingItem:oldBarButtonItem
+                                                          fromItems:shownItems];
+      if (newBarButtonItem == oldBarButtonItem) {
+        // Updated in place: the bar already shows this button.
+        break;
+      }
 
       if (oldBarButtonItem != nil) {
         NSUInteger index = [_leadingBarButtonItems indexOfObject:oldBarButtonItem];
@@ -263,11 +280,18 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
         }
       }
 
-      [controller.navigationItem setLeftBarButtonItems:[_leadingBarButtonItems copy] animated:YES];
+      [controller.navigationItem setLeftBarButtonItems:[_leadingBarButtonItems copy] animated:NO];
       break;
     }
     case RNSHeaderItemPlacementTrailing: {
-      UIBarButtonItem *newBarButtonItem = [self buildBarButtonItemForItem:targetItem];
+      NSSet<UIBarButtonItem *> *shownItems = [NSSet setWithArray:_trailingBarButtonItems];
+      UIBarButtonItem *newBarButtonItem = [self buildBarItemForItem:targetItem
+                                                        reusingItem:oldBarButtonItem
+                                                          fromItems:shownItems];
+      if (newBarButtonItem == oldBarButtonItem) {
+        // Updated in place: the bar already shows this button.
+        break;
+      }
 
       if (oldBarButtonItem != nil) {
         NSUInteger index = [_trailingBarButtonItems indexOfObject:oldBarButtonItem];
@@ -278,7 +302,7 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
         }
       }
 
-      [controller.navigationItem setRightBarButtonItems:[_trailingBarButtonItems copy] animated:YES];
+      [controller.navigationItem setRightBarButtonItems:[_trailingBarButtonItems copy] animated:NO];
       break;
     }
     case RNSHeaderItemPlacementToolbar: {
@@ -410,8 +434,8 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   navItem.titleView = nil;
   navItem.standardAppearance = nil;
   navItem.scrollEdgeAppearance = nil;
-  [navItem setLeftBarButtonItems:@[] animated:YES];
-  [navItem setRightBarButtonItems:@[] animated:YES];
+  [navItem setLeftBarButtonItems:@[] animated:NO];
+  [navItem setRightBarButtonItems:@[] animated:NO];
 
 #if !TARGET_OS_TV
   if (@available(iOS 16.0, *)) {
@@ -756,8 +780,14 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   navItem.leftItemsSupplementBackButton = YES;
 #endif // !TARGET_OS_TV
 
-  [navItem setLeftBarButtonItems:[_leadingBarButtonItems copy] animated:YES];
-  [navItem setRightBarButtonItems:[_trailingBarButtonItems copy] animated:YES];
+  // Like the toolbar above: a Fabric rebuild is not a transition. An animated swap restarts UIKit's blur
+  // transition on every rebuild, and on the iPhone Duo's vertical bar it can leave the buttons blurred.
+  if (![navItem.leftBarButtonItems ?: @[] isEqualToArray:_leadingBarButtonItems]) {
+    [navItem setLeftBarButtonItems:[_leadingBarButtonItems copy] animated:NO];
+  }
+  if (![navItem.rightBarButtonItems ?: @[] isEqualToArray:_trailingBarButtonItems]) {
+    [navItem setRightBarButtonItems:[_trailingBarButtonItems copy] animated:NO];
+  }
 
   navItem.titleView = titleView;
 
@@ -800,6 +830,74 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
     };
   }
 #endif // !TARGET_OS_TV
+}
+
+/**
+ Builds the bar item for a leading or trailing header item. When `previous` is the button shown for the same item
+ and both are plain icon buttons, the new contents are copied onto `previous` and it is returned instead, so UIKit
+ keeps the button it already shows rather than fading a new one in.
+ */
+- (UIBarButtonItem *)buildBarItemForItem:(id<RNSStackHeaderItemDataProviding>)item
+                             reusingItem:(nullable UIBarButtonItem *)previous
+                               fromItems:(NSSet<UIBarButtonItem *> *)shownItems
+{
+  UIBarButtonItem *source = [self buildBarButtonItemForItem:item];
+  if (previous == nil || previous == source || item.searchBarPlacement || ![shownItems containsObject:previous] ||
+      ![RNSStackScreenHeaderCoordinator isReusablePlainIconItem:source] ||
+      ![RNSStackScreenHeaderCoordinator isReusablePlainIconItem:previous]) {
+    return source;
+  }
+
+  previous.primaryAction = source.primaryAction;
+  previous.target = source.target;
+  previous.action = source.action;
+  previous.title = source.title;
+  previous.image = source.image;
+  previous.tintColor = source.tintColor;
+  previous.enabled = source.enabled;
+  previous.style = source.style;
+  previous.accessibilityLabel = source.accessibilityLabel;
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (@available(iOS 26.0, *)) {
+    previous.identifier = source.identifier;
+    previous.hidesSharedBackground = source.hidesSharedBackground;
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_TV && !TARGET_OS_VISION
+  if (@available(iOS 27.0, *)) {
+    previous.visibilityPriority = source.visibilityPriority;
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_TV && !TARGET_OS_VISION
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+  if (@available(iOS 27.1, *)) {
+    previous.axisBehavior = source.axisBehavior;
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+
+  if (item.itemId != nil) {
+    _barButtonItemsByItemId[item.itemId] = previous;
+  }
+  return previous;
+}
+
+/**
+ A button whose whole state is the properties copied above: a symbol image resolves synchronously, so no image
+ load finishes later on the discarded item, and there is no custom view, menu or overflow menu to carry over. Menus
+ capture the toggle state tracker they were built with, which a rebuild replaces.
+ */
++ (BOOL)isReusablePlainIconItem:(UIBarButtonItem *)item
+{
+  if (item.customView != nil || item.menu != nil || item.image == nil || !item.image.isSymbolImage) {
+    return NO;
+  }
+#if !TARGET_OS_TV
+  if (@available(iOS 16.0, *)) {
+    if (item.menuRepresentation != nil) {
+      return NO;
+    }
+  }
+#endif // !TARGET_OS_TV
+  return YES;
 }
 
 - (UIBarButtonItem *)buildBarButtonItemForItem:(id<RNSStackHeaderItemDataProviding>)item
