@@ -657,12 +657,17 @@ RNS_IGNORE_SUPER_CALL_END
   // For RN touches to work we need to instantiate and connect RCTSurfaceTouchHandler. This only applies
   // for screens that aren't mounted under RCTRootComponentView e.g., modals that are mounted directly to
   // root application window.
+  // A screen can move between windows with its handler already attached, or move under a React root
+  // with it already detached (an iPhone Duo fold re-parents presented screens), and the handler
+  // asserts on attaching twice or detaching from a view it is not attached to.
   if (self.window != nil && ![self isMountedUnderScreenOrReactRoot]) {
     if (_touchHandler == nil) {
       _touchHandler = [RCTSurfaceTouchHandler new];
     }
-    [_touchHandler attachToView:self];
-  } else {
+    if (_touchHandler.view == nil) {
+      [_touchHandler attachToView:self];
+    }
+  } else if (_touchHandler.view == self) {
     [_touchHandler detachFromView:self];
   }
 }
