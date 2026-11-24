@@ -18,7 +18,7 @@ export type Placement =
   | 'subtitle'
   | 'largeSubtitle';
 
-export type Variant = 'plain' | 'prominent';
+export type Variant = 'plain' | 'done' | 'prominent';
 
 export type StackHeaderMenuItemIOS = {
   id: string;

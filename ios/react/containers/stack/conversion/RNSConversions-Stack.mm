@@ -36,6 +36,8 @@ UIBarButtonItemStyle UIBarButtonItemStyleFromReactRNSStackHeaderItemIOSVariant(
   switch (variant) {
     case react::RNSStackHeaderItemIOSVariant::Plain:
       return UIBarButtonItemStylePlain;
+    case react::RNSStackHeaderItemIOSVariant::Done:
+      return UIBarButtonItemStyleDone;
     case react::RNSStackHeaderItemIOSVariant::Prominent:
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
       if (@available(iOS 26.0, *)) {

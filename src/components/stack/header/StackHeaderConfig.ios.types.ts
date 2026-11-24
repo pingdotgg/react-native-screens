@@ -254,10 +254,11 @@ export interface StackHeaderSupportsIdentifierIOS {
  * @remarks
  * The following values are supported:
  * - `'plain'` — the default look of a bar button item.
+ * - `'done'` — UIKit's `done` style (`UIBarButtonItem.Style.done`).
  * - `'prominent'` — the item is emphasized with a tinted background.
  *   On iOS below 26 it falls back to bold text (the `done` style).
  */
-export type StackHeaderItemVariantIOS = 'plain' | 'prominent';
+export type StackHeaderItemVariantIOS = 'plain' | 'done' | 'prominent';
 
 /**
  * Native header item with a title or an icon.
