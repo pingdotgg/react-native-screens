@@ -96,6 +96,8 @@ namespace react = facebook::react;
 - (void)setStackHost:(nullable RNSStackHostComponentView *)stackHost
 {
   _stackHost = stackHost;
+  // A column keeps its place in the Split while its stack has no attached screens.
+  _stackHost.stackNavigationController.allowsEmptyStack = YES;
   _columnCoordinator.hostedStackNavigationController = _stackHost.stackNavigationController;
 
   // The column provides another navigation controller now. The one its coordinator created is not used anymore, and

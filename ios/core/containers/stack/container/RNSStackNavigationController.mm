@@ -68,6 +68,9 @@
   RNSStackPopGestureDelegate *_Nullable _edgePopGestureDelegate;
   RNSStackPopGestureDelegate *_Nullable _contentPopGestureDelegate;
 #endif // !TARGET_OS_TV
+
+  UIViewController *_Nullable _emptyStackController;
+  BOOL _waitingForTransition;
 }
 
 - (instancetype)init
@@ -234,6 +237,28 @@
   return [super popToRootViewControllerAnimated:animated];
 }
 
+#pragma mark - Empty stack
+
+- (void)setAllowsEmptyStack:(BOOL)allowsEmptyStack
+{
+  _allowsEmptyStack = allowsEmptyStack;
+  if (allowsEmptyStack) {
+    if (_emptyStackController == nil) {
+      _emptyStackController = [UIViewController new];
+    }
+    if (self.viewControllers.count == 0) {
+      [self setViewControllers:@[ _emptyStackController ] animated:NO];
+    }
+  } else if (self.topViewController == _emptyStackController) {
+    [self setViewControllers:@[] animated:NO];
+  }
+}
+
+- (BOOL)isStackEmpty
+{
+  return self.viewControllers.count == 0 || self.topViewController == _emptyStackController;
+}
+
 #pragma mark-- Layout
 
 - (void)viewDidLayoutSubviews
@@ -336,9 +361,29 @@
   //
   // The assertions below work under this assumption
 
-  if (![self hasPendingOperations]) {
+  if (![self hasPendingOperations] || _waitingForTransition) {
     return;
   }
+
+  id<UIViewControllerTransitionCoordinator> coordinator = self.transitionCoordinator;
+  if (_allowsEmptyStack && coordinator != nil) {
+    // UIKit can ignore pops while the Split shows or hides the column. The operations wait for the transition.
+    _waitingForTransition = YES;
+    __weak auto weakSelf = self;
+    [coordinator animateAlongsideTransition:nil
+                                 completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                     auto strongSelf = weakSelf;
+                                     if (strongSelf != nil) {
+                                       strongSelf->_waitingForTransition = NO;
+                                       [strongSelf commitTransaction];
+                                     }
+                                   });
+                                 }];
+    return;
+  }
+
+  [self dropOperationsOfScreensAttachedAndDetachedWhileWaiting];
 
   _performingReactUpdate = YES;
   if (_pendingPopOperations.count > 0 && _pendingPushOperations.count > 0) {
@@ -352,31 +397,73 @@
                 @"[RNScreens] Attempt to pop non-top screen");
       [controllers removeLastObject];
     }
+    if (_emptyStackController != nil) {
+      // The placeholder must not appear in the back stack of the first real screen.
+      [controllers removeObject:_emptyStackController];
+    }
     for (RNSPushOperation *op in _pendingPushOperations) {
       [controllers addObject:op.screenController];
     }
     [self prepareToolbarForController:controllers.lastObject];
     [self setViewControllers:controllers animated:YES];
   } else {
-    for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
-      RNSAssert([self.viewControllers count] > 1, @"[RNScreens] Attempt to pop last screen from the stack");
+    for (RNSPopOperation *op in _pendingPopOperations) {
+      RNSAssert(_allowsEmptyStack ? !self.isStackEmpty : [self.viewControllers count] > 1,
+                @"[RNScreens] Attempt to pop last screen from the stack");
       RNSAssert(self.topViewController == static_cast<UIViewController *>(op.screenController),
                 @"[RNScreens] Attempt to pop non-top screen");
-      [self popViewControllerAnimated:YES];
+      if (_allowsEmptyStack && self.viewControllers.count == 1) {
+        // UIKit cannot show an empty navigation controller in a collapsed Split.
+        [self setViewControllers:@[ _emptyStackController ] animated:NO];
+      } else {
+        // Intermediate pops must finish synchronously before the final transition starts.
+        [self popViewControllerAnimated:op == _pendingPopOperations.lastObject];
+      }
     }
 
     for (RNSPushOperation *op in _pendingPushOperations) {
-      [self pushViewController:op.screenController animated:YES];
+      if (_allowsEmptyStack && self.isStackEmpty) {
+        // The first screen is the root, so the placeholder must not appear in its back stack.
+        [self prepareToolbarForController:op.screenController];
+        [self setViewControllers:@[ op.screenController ] animated:NO];
+      } else {
+        [self pushViewController:op.screenController animated:op == _pendingPushOperations.lastObject];
+      }
     }
   }
 
-  RNSAssert([self.viewControllers count] > 0, @"[RNScreens] Stack should never be empty after updates");
+  RNSAssert(_allowsEmptyStack || [self.viewControllers count] > 0,
+            @"[RNScreens] Stack should never be empty after updates");
   _performingReactUpdate = NO;
 
   [self dumpStackModel];
 
   [_pendingPopOperations removeAllObjects];
   [_pendingPushOperations removeAllObjects];
+}
+
+/**
+ * A screen attached and detached again while the operations waited for a transition has a push and a pop pending,
+ * but it never got on the stack. Both are dropped, as the pop would not find it.
+ */
+- (void)dropOperationsOfScreensAttachedAndDetachedWhileWaiting
+{
+  NSMutableArray<RNSPopOperation *> *droppedPops = [NSMutableArray array];
+  NSMutableArray<RNSPushOperation *> *droppedPushes = [NSMutableArray array];
+  for (RNSPopOperation *pop in _pendingPopOperations) {
+    if ([self.viewControllers containsObject:pop.screenController]) {
+      continue;
+    }
+    for (RNSPushOperation *push in _pendingPushOperations) {
+      if (push.screenController == pop.screenController && ![droppedPushes containsObject:push]) {
+        [droppedPops addObject:pop];
+        [droppedPushes addObject:push];
+        break;
+      }
+    }
+  }
+  [_pendingPopOperations removeObjectsInArray:droppedPops];
+  [_pendingPushOperations removeObjectsInArray:droppedPushes];
 }
 
 #pragma mark - Debug
@@ -386,6 +473,9 @@
 #ifdef RNS_DEBUG_LOGGING
   RNSLogD(@"[RNScreens] StackContainer [%ld] MODEL BEGIN", self.view.tag);
   for (UIViewController *viewController in self.viewControllers) {
+    if (viewController == _emptyStackController) {
+      continue;
+    }
     RNSLogD(@"[RNScreens] %@", static_cast<RNSStackScreenController *>(viewController).configProvider.screenKey);
   }
 #endif // RNS_DEBUG_LOGGING

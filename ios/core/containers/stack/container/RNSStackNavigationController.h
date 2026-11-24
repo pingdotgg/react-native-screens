@@ -48,6 +48,17 @@
 - (nonnull UIBarButtonItem *)toolbarIconButtonForIdentifier:(nonnull NSString *)identifier;
 #endif // !TARGET_OS_TV
 
+/**
+ * A stack that navigates a Split column can have no attached screens. It shows a native placeholder then, as UIKit
+ * cannot show an empty navigation controller in a collapsed Split. A standalone stack keeps its root screen.
+ */
+@property (nonatomic) BOOL allowsEmptyStack;
+
+/**
+ * Whether the stack has no screen of its own, i.e. it is empty or shows the placeholder.
+ */
+@property (nonatomic, readonly, getter=isStackEmpty) BOOL stackEmpty;
+
 - (void)enqueuePushOperation:(nonnull RNSStackScreenController *)screenController;
 
 - (void)enqueuePopOperation:(nonnull RNSStackScreenController *)screenController;
