@@ -208,8 +208,47 @@ static UISplitViewControllerDisplayMode RNSSplitDisplayModeForSize(id<RNSSplitHo
 - (void)updateSplitViewDisplayModeFor:(id<RNSSplitHostAppearanceProvider>)provider
                        withController:(RNSSplitHostController *)splitHostController
 {
-  splitHostController.preferredDisplayMode =
+  const auto preferredDisplayMode =
       RNSSplitDisplayModeForSize(provider, splitHostController.viewIfLoaded.bounds.size);
+  if (splitHostController.preferredDisplayMode == preferredDisplayMode) {
+    return;
+  }
+
+  UIView *view = splitHostController.viewIfLoaded;
+  // Animate a Split that is already displayed. The initial configuration and the navigation of a collapsed Split must
+  // not start a sidebar transition.
+  const BOOL shouldAnimate = view.window != nil && !splitHostController.isCollapsed &&
+      splitHostController.preferredDisplayMode != UISplitViewControllerDisplayModeAutomatic &&
+      !UIAccessibilityIsReduceMotionEnabled();
+  if (!shouldAnimate) {
+    splitHostController.preferredDisplayMode = preferredDisplayMode;
+    return;
+  }
+
+  // The column transition of UIKit also moves floating search toolbars. A UIView animation of preferredDisplayMode
+  // alone leaves those controls ahead of the sidebar.
+  if (splitHostController.style == UISplitViewControllerStyleDoubleColumn &&
+      (preferredDisplayMode == UISplitViewControllerDisplayModeOneBesideSecondary ||
+       preferredDisplayMode == UISplitViewControllerDisplayModeSecondaryOnly)) {
+    if (preferredDisplayMode == UISplitViewControllerDisplayModeSecondaryOnly) {
+      [splitHostController hideColumn:UISplitViewControllerColumnPrimary];
+    } else {
+      [splitHostController showColumn:UISplitViewControllerColumnPrimary];
+    }
+    splitHostController.preferredDisplayMode = preferredDisplayMode;
+    return;
+  }
+
+  [view layoutIfNeeded];
+  [UIView animateWithDuration:0.35
+                        delay:0
+                      options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction |
+                      UIViewAnimationOptionCurveEaseInOut
+                   animations:^{
+                     splitHostController.preferredDisplayMode = preferredDisplayMode;
+                     [view layoutIfNeeded];
+                   }
+                   completion:nil];
 }
 
 - (void)validateColumnConstraintsWithMinWidth:(CGFloat)minWidth maxWidth:(CGFloat)maxWidth
