@@ -13,6 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) NSString *subtitle;
 @property (nonatomic, readonly) BOOL hidden;
 @property (nonatomic, readonly) BOOL backButtonHidden;
+/**
+ * Tint of the navigation bar and toolbar while the screen is on top; nil means the default system tint.
+ * Named headerTintColor to avoid clashing with UIView's tintColor on conforming views.
+ */
+@property (nonatomic, readonly, nullable) UIColor *headerTintColor;
 #if !TARGET_OS_TV
 @property (nonatomic, readonly) UINavigationItemStyle navigationItemStyle API_AVAILABLE(ios(16.0));
 #endif // !TARGET_OS_TV

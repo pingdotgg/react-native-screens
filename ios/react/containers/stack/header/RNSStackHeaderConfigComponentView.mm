@@ -64,6 +64,7 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   _subtitle = nil;
   _hidden = NO;
   _backButtonHidden = NO;
+  _headerTintColor = nil;
 #if !TARGET_OS_TV
   if (@available(iOS 16.0, *)) {
     _navigationItemStyle = UINavigationItemStyleNavigator;
@@ -414,6 +415,10 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
 
   if (oldHeaderProps.hidden != newHeaderProps.hidden) {
     _hidden = newHeaderProps.hidden;
+  }
+
+  if (oldHeaderProps.tintColor != newHeaderProps.tintColor) {
+    _headerTintColor = RCTUIColorFromSharedColor(newHeaderProps.tintColor);
   }
 
   if (oldHeaderProps.backButtonHidden != newHeaderProps.backButtonHidden) {

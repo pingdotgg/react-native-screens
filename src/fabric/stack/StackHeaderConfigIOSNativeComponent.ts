@@ -2,6 +2,7 @@
 
 import type {
   CodegenTypes as CT,
+  ColorValue,
   HostComponent,
   ProcessedColorValue,
   ViewProps,
@@ -82,6 +83,7 @@ export interface NativeProps extends ViewProps {
   backButtonHidden?: CT.WithDefault<boolean, false>;
 
   // iOS-specific props
+  tintColor?: ColorValue | undefined;
   navigationItemStyle?: CT.WithDefault<NavigationItemStyle, 'navigator'>;
   backButtonTitle?: string | undefined;
   backButtonDisplayMode?: CT.WithDefault<BackButtonDisplayMode, 'default'>;

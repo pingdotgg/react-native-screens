@@ -757,6 +757,17 @@ export interface StackHeaderAppearanceIOS {
  */
 export interface StackHeaderConfigPropsIOS {
   /**
+   * Tint of the navigation bar and the toolbar, including the back button and
+   * the header and toolbar items without their own `tintColor`.
+   *
+   * @remarks
+   * The bars are shared by the screens of a stack. The tint of the screen on
+   * top applies, including after a native pop.
+   *
+   * @platform ios
+   */
+  tintColor?: ColorValue | undefined;
+  /**
    * Layout style of the screen's navigation item.
    *
    * @remarks

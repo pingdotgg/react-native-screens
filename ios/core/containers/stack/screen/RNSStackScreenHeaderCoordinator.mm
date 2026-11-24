@@ -56,6 +56,13 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
     return;
   }
 
+  // The bars are shared by all screens of the stack: the visible screen owns their tint, including after a native pop.
+  UIColor *tintColor = _configDataProvider.headerTintColor;
+  navController.navigationBar.tintColor = tintColor;
+#if !TARGET_OS_TV
+  navController.toolbar.tintColor = tintColor;
+#endif // !TARGET_OS_TV
+
   BOOL hidden = _configDataProvider == nil ? !_showsNavigationBarWithoutHeaderConfig : _configDataProvider.hidden;
   [navController.navigationBarCoordinator setHidden:hidden forNavigationController:navController animated:animated];
 }
