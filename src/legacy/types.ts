@@ -39,6 +39,7 @@ export type SheetCommands = {
 };
 
 export type BackButtonDisplayMode = 'default' | 'generic' | 'minimal';
+export type NavigationItemStyle = 'navigator' | 'browser' | 'editor';
 
 export type HeaderMinimizationBehavior =
   | 'automatic'
@@ -787,6 +788,14 @@ export interface ScreenStackHeaderConfigProps extends ViewProps {
    */
   backButtonDisplayMode?: BackButtonDisplayMode | undefined;
   /**
+   * Controls the UIKit `UINavigationItem.style` used by native iOS headers.
+   *
+   * `editor` matches modern document/editor-style bars with leading-aligned compact titles and glass controls.
+   *
+   * @platform ios
+   */
+  navigationItemStyle?: NavigationItemStyle | undefined;
+  /**
    * Array of UIBarButtomItems to the left side of the header.
    *
    * @platform ios
@@ -798,6 +807,26 @@ export interface ScreenStackHeaderConfigProps extends ViewProps {
    * @platform ios
    */
   headerRightBarButtonItems?: HeaderBarButtonItem[] | undefined;
+  /**
+   * Array of UIBarButtonItems to the centered item group in modern iOS headers.
+   *
+   * This maps to `UINavigationItem.centerItemGroups` on iOS 26+ and lets
+   * document/editor-style chrome keep primary actions visually centered while
+   * leaving trailing search separate.
+   *
+   * @platform ios
+   */
+  headerCenterBarButtonItems?: HeaderBarButtonItem[] | undefined;
+  /**
+   * Array of UIBarButtonItems to display in the native toolbar attached to
+   * the current screen's navigation controller.
+   *
+   * On iOS 26+, this can contain a `searchBarPlacement` item to let UIKit
+   * render integrated Mail-style search chrome using the attached SearchBar.
+   *
+   * @platform ios
+   */
+  headerToolbarItems?: HeaderBarButtonItem[] | undefined;
   /**
    * When set to true the header will be hidden while the parent Screen is on the top of the stack. The default value is false.
    */
@@ -921,6 +950,20 @@ export interface ScreenStackHeaderConfigProps extends ViewProps {
    * String that can be displayed in the header as a fallback for `headerTitle`.
    */
   title?: string | undefined;
+  /**
+   * String displayed below the compact navigation title on iOS 26+.
+   *
+   * @platform ios
+   */
+  subtitle?: string | undefined;
+  /**
+   * String displayed below the large navigation title on iOS 26+.
+   *
+   * Falls back to `subtitle` when omitted.
+   *
+   * @platform ios
+   */
+  largeSubtitle?: string | undefined;
   /**
    * Allows for setting text color of the title.
    */
@@ -1249,6 +1292,13 @@ export type HeaderBarButtonItemVisibilityPriority = 'low' | 'standard' | 'high';
 
 export interface ScreenStackHeaderSubviewProps {
   /**
+   * An identifier used to match this item across navigation bar transitions.
+   * Only applicable to type="right" and type="left" subviews on iOS 26.0 and later.
+   *
+   * Read more: https://developer.apple.com/documentation/uikit/uibarbuttonitem/identifier
+   */
+  identifier?: string | undefined;
+  /**
    * A boolean value indicating whether the background this item may share with other items in the bar should be hidden.
    * Only applicable to type="right" and type="left" subviews.
    * Only available from iOS 26.0 and later.
@@ -1303,6 +1353,11 @@ interface SharedHeaderBarButtonItem {
    * Read more: https://developer.apple.com/documentation/uikit/uibarbuttonitem/style-swift.property
    */
   variant?: 'plain' | 'done' | 'prominent' | undefined;
+  /**
+   * Render the item with UIButtonConfiguration.glassButtonConfiguration.
+   * Only available from iOS 26.0 and later.
+   */
+  glassEffect?: boolean | undefined;
   /**
    * The tint color to apply to the item.
    *
@@ -1489,11 +1544,47 @@ export interface HeaderBarButtonItemWithMenu extends SharedHeaderBarButtonItem {
 export interface HeaderBarButtonItemSpacing {
   type: 'spacing';
   spacing: number;
+  flexible?: boolean | undefined;
+}
+
+export interface HeaderBarButtonSearchBarPlacementItem {
+  type: 'searchBarPlacement';
+  activatesSearchController?: boolean | undefined;
+  customView?: boolean | undefined;
+  index?: number | undefined;
+  width?: number | undefined;
+}
+
+export interface HeaderBarButtonSearchFieldItem {
+  type: 'searchField';
+  placeholder?: string | undefined;
+  width?: number | undefined;
+}
+
+export interface HeaderBarButtonMailSearchToolbarItem {
+  type: 'mailSearchToolbar';
+  composeButtonId?: string | undefined;
+  composeMenu?: HeaderBarButtonItemWithMenu['menu'] | undefined;
+  composeSystemImageName?: string | undefined;
+  filterButtonId?: string | undefined;
+  filterMenu?: HeaderBarButtonItemWithMenu['menu'] | undefined;
+  filterSystemImageName?: string | undefined;
+  onComposePress?: (() => void) | undefined;
+  onFilterPress?: (() => void) | undefined;
+  onSearchTextChange?: ((text: string) => void) | undefined;
+  placeholder?: string | undefined;
+  searchTextChangeId?: string | undefined;
+  showsSearchDismissButton?: boolean | undefined;
+  useFallbackSearchField?: boolean | undefined;
+  width?: number | undefined;
 }
 
 export type HeaderBarButtonItem =
   | HeaderBarButtonItemWithAction
   | HeaderBarButtonItemWithMenu
+  | HeaderBarButtonMailSearchToolbarItem
+  | HeaderBarButtonSearchFieldItem
+  | HeaderBarButtonSearchBarPlacementItem
   | HeaderBarButtonItemSpacing;
 
 /**

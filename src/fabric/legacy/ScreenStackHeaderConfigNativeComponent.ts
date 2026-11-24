@@ -20,6 +20,7 @@ type OnPressHeaderBarButtonItemEvent = Readonly<{ buttonId: string }>;
 type OnPressHeaderBarButtonMenuItemEvent = Readonly<{ menuId: string }>;
 
 type BackButtonDisplayMode = 'minimal' | 'default' | 'generic';
+type NavigationItemStyle = 'navigator' | 'browser' | 'editor';
 
 type BlurEffect =
   | 'none'
@@ -86,6 +87,8 @@ export interface NativeProps extends ViewProps {
   largeTitleColor?: ColorValue | undefined;
   translucent?: boolean | undefined;
   title?: string | undefined;
+  subtitle?: string | undefined;
+  largeSubtitle?: string | undefined;
   titleFontFamily?: string | undefined;
   titleFontSize?: CT.Int32 | undefined;
   titleFontWeight?: string | undefined;
@@ -94,6 +97,7 @@ export interface NativeProps extends ViewProps {
   // An object, so that an omitted spacing stays distinct from an explicit 0.
   letterSpacing?: UnsafeMixed<HeaderLetterSpacing> | undefined;
   backButtonDisplayMode?: CT.WithDefault<BackButtonDisplayMode, 'default'>;
+  navigationItemStyle?: CT.WithDefault<NavigationItemStyle, 'navigator'>;
   hideBackButton?: boolean | undefined;
   backButtonInCustomView?: boolean | undefined;
   blurEffect?: CT.WithDefault<BlurEffect, 'none'>;
@@ -104,6 +108,8 @@ export interface NativeProps extends ViewProps {
   topInsetEnabled?: boolean | undefined;
   headerLeftBarButtonItems?: CT.UnsafeMixed[] | undefined;
   headerRightBarButtonItems?: CT.UnsafeMixed[] | undefined;
+  headerCenterBarButtonItems?: CT.UnsafeMixed[] | undefined;
+  headerToolbarItems?: CT.UnsafeMixed[] | undefined;
   onPressHeaderBarButtonItem?:
     | CT.DirectEventHandler<OnPressHeaderBarButtonItemEvent>
     | undefined;

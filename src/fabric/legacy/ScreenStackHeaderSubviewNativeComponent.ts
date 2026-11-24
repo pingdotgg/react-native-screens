@@ -20,6 +20,7 @@ export type HeaderSubviewTypes =
 export interface NativeProps extends ViewProps {
   type?: CT.WithDefault<HeaderSubviewTypes, 'left'>;
   hidesSharedBackground?: boolean | undefined;
+  identifier?: string | undefined;
   visibilityPriority?: CT.WithDefault<
     HeaderSubviewVisibilityPriority,
     'standard'

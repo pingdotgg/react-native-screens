@@ -127,6 +127,33 @@ class ScreenStackHeaderConfigViewManager :
         config.setTitle(title)
     }
 
+    // iOS-only header props from the T3 fork. The codegen interface requires the
+    // setters, so they are no-ops on Android.
+    override fun setSubtitle(
+        config: ScreenStackHeaderConfig,
+        subtitle: String?,
+    ) = Unit
+
+    override fun setLargeSubtitle(
+        config: ScreenStackHeaderConfig,
+        largeSubtitle: String?,
+    ) = Unit
+
+    override fun setNavigationItemStyle(
+        config: ScreenStackHeaderConfig,
+        navigationItemStyle: String?,
+    ) = Unit
+
+    override fun setHeaderCenterBarButtonItems(
+        config: ScreenStackHeaderConfig,
+        headerCenterBarButtonItems: ReadableArray?,
+    ) = Unit
+
+    override fun setHeaderToolbarItems(
+        config: ScreenStackHeaderConfig,
+        headerToolbarItems: ReadableArray?,
+    ) = Unit
+
     override fun setTitleFontFamily(
         config: ScreenStackHeaderConfig,
         titleFontFamily: String?,

@@ -12,7 +12,7 @@ export interface ResolvedImageAsset extends ImageResolvedAssetSource {}
 const prepareMenu = (
   menu: HeaderBarButtonItemWithMenu['menu'],
   index: number,
-  side: 'left' | 'right',
+  placement: 'left' | 'right' | 'center' | 'toolbar',
   path: string = '',
 ): HeaderBarButtonItemWithMenu['menu'] => {
   return {
@@ -39,7 +39,7 @@ const prepareMenu = (
           xcassetName,
           imageSource,
           templateSource,
-          ...prepareMenu(menuItem, index, side, currentPath),
+          ...prepareMenu(menuItem, index, placement, currentPath),
         };
       }
       return {
@@ -48,64 +48,108 @@ const prepareMenu = (
         xcassetName,
         imageSource,
         templateSource,
-        menuId: `${currentPath}-${index}-${side}`,
+        menuId: `${currentPath}-${index}-${placement}`,
       };
     }),
   };
 };
 
 export const prepareHeaderBarButtonItems = (
-  barButtonItems: HeaderBarButtonItem[],
-  side: 'left' | 'right',
+  barButtonItems:
+    | HeaderBarButtonItem[]
+    | HeaderBarButtonItem
+    | null
+    | undefined,
+  placement: 'left' | 'right' | 'center' | 'toolbar',
 ) => {
-  return barButtonItems?.map((item, index) => {
-    if (item.type === 'spacing') {
-      return item;
-    }
-    let imageSource: ResolvedImageAsset | undefined,
-      templateSource: ResolvedImageAsset | undefined;
-    if (item.icon?.type === 'imageSource') {
-      imageSource = Image.resolveAssetSource(item.icon.imageSource);
-    } else if (item.icon?.type === 'templateSource') {
-      templateSource = Image.resolveAssetSource(item.icon.templateSource);
-    }
+  const items = Array.isArray(barButtonItems)
+    ? barButtonItems
+    : barButtonItems &&
+      typeof barButtonItems === 'object' &&
+      'type' in barButtonItems
+    ? [barButtonItems]
+    : undefined;
 
-    const titleStyle = item.titleStyle
-      ? { ...item.titleStyle, color: processColor(item.titleStyle.color) }
-      : undefined;
-    const tintColor = item.tintColor ? processColor(item.tintColor) : undefined;
-    const badge = item.badge
-      ? {
-          ...item.badge,
-          style: {
-            ...item.badge.style,
-            color: processColor(item.badge.style?.color),
-            backgroundColor: processColor(item.badge.style?.backgroundColor),
-          },
+  return items
+    ?.map((item, index) => {
+      if (item.type === 'spacing') {
+        return item;
+      }
+      if (item.type === 'searchBarPlacement') {
+        if (placement !== 'toolbar') {
+          return null;
         }
-      : undefined;
-    const processedItem = {
-      ...item,
-      imageSource,
-      templateSource,
-      sfSymbolName: item.icon?.type === 'sfSymbol' ? item.icon.name : undefined,
-      xcassetName: item.icon?.type === 'xcasset' ? item.icon.name : undefined,
-      titleStyle,
-      tintColor,
-      badge,
-    };
-    if (item.type === 'button') {
-      return {
-        ...processedItem,
-        buttonId: `${index}-${side}`,
+        return {
+          ...item,
+          searchBarPlacement: true,
+        };
+      }
+      if (item.type === 'searchField') {
+        return {
+          ...item,
+          searchField: true,
+        };
+      }
+      if (item.type === 'mailSearchToolbar') {
+        return {
+          ...item,
+          mailSearchToolbar: true,
+          filterMenu: item.filterMenu
+            ? prepareMenu(item.filterMenu, index, placement, 'filter')
+            : undefined,
+          composeMenu: item.composeMenu
+            ? prepareMenu(item.composeMenu, index, placement, 'compose')
+            : undefined,
+        };
+      }
+      let imageSource: ResolvedImageAsset | undefined,
+        templateSource: ResolvedImageAsset | undefined;
+      if (item.icon?.type === 'imageSource') {
+        imageSource = Image.resolveAssetSource(item.icon.imageSource);
+      } else if (item.icon?.type === 'templateSource') {
+        templateSource = Image.resolveAssetSource(item.icon.templateSource);
+      }
+
+      const titleStyle = item.titleStyle
+        ? { ...item.titleStyle, color: processColor(item.titleStyle.color) }
+        : undefined;
+      const tintColor = item.tintColor
+        ? processColor(item.tintColor)
+        : undefined;
+      const badge = item.badge
+        ? {
+            ...item.badge,
+            style: {
+              ...item.badge.style,
+              color: processColor(item.badge.style?.color),
+              backgroundColor: processColor(item.badge.style?.backgroundColor),
+            },
+          }
+        : undefined;
+      const processedItem = {
+        ...item,
+        imageSource,
+        templateSource,
+        sfSymbolName:
+          item.icon?.type === 'sfSymbol' ? item.icon.name : undefined,
+        xcassetName: item.icon?.type === 'xcasset' ? item.icon.name : undefined,
+        titleStyle,
+        tintColor,
+        badge,
       };
-    }
-    if (item.type === 'menu') {
-      return {
-        ...processedItem,
-        menu: prepareMenu(item.menu, index, side),
-      };
-    }
-    return null;
-  });
+      if (item.type === 'button') {
+        return {
+          ...processedItem,
+          buttonId: `${index}-${placement}`,
+        };
+      }
+      if (item.type === 'menu') {
+        return {
+          ...processedItem,
+          menu: prepareMenu(item.menu, index, placement),
+        };
+      }
+      return null;
+    })
+    .filter(item => item !== null);
 };

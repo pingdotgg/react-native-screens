@@ -47,6 +47,12 @@ class ScreenStackHeaderSubviewManager :
         Log.w("[RNScreens]", "hidesSharedBackground prop is not available on Android")
     }
 
+    // Bar button transition identifiers only apply on iOS.
+    override fun setIdentifier(
+        view: ScreenStackHeaderSubview,
+        identifier: String?,
+    ) = Unit
+
     override fun setVisibilityPriority(
         view: ScreenStackHeaderSubview,
         visibilityPriority: String?,
