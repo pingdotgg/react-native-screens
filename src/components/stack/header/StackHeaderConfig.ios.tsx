@@ -22,6 +22,7 @@ import StackHeaderItemSpacer from './ios/StackHeaderItemSpacer.ios';
 import StackHeaderItem from './ios/StackHeaderItem.ios';
 import {
   NativeSyntheticEvent,
+  Platform,
   StyleSheet,
   processColor,
   type TextStyle,
@@ -46,6 +47,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
   const { ref: forwardedRef, ios, android, ...restProps } = props;
 
   const {
+    searchBar,
     leadingItems,
     trailingItems,
     toolbarItems,
@@ -184,6 +186,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
       style={styles.config}
       onMenuItemPress={handleMenuItemPress}
       onMenuSelectionChange={handleSelectionChange}>
+      {!Platform.isTV && searchBar}
       {leadingItems?.map(item => makeItemViewFromItem(item, 'leading'))}
       {titleItem && makeItemViewFromItem(titleItem, 'title')}
       {subtitleItem && makeItemViewFromItem(subtitleItem, 'subtitle')}

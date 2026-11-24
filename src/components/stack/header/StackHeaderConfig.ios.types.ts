@@ -1,4 +1,6 @@
+import type { ReactElement } from 'react';
 import type { ColorValue, TextStyle } from 'react-native';
+import type { SearchBarProps } from '../../../legacy/types';
 import type { PlatformIconIOS } from '../../shared/types';
 import type {
   StackHeaderElementFactory,
@@ -796,6 +798,23 @@ export interface StackHeaderAppearanceIOS {
  * iOS-specific props for {@link Stack.HeaderConfig}.
  */
 export interface StackHeaderConfigPropsIOS {
+  /**
+   * Search bar displayed in the native navigation header.
+   *
+   * @remarks
+   * Pass a single `<SearchBar />` element. Its existing props, events and ref
+   * commands configure the native search controller. Removing or replacing
+   * the element dismisses the previous search controller. Search is dismissed
+   * when the screen loses focus; returning does not automatically focus it.
+   *
+   * Wrap scrollable content in `ScrollViewMarker` so that UIKit can apply
+   * `hideWhenScrolling` to the screen's content scroll view.
+   *
+   * Ignored on tvOS.
+   *
+   * @platform ios
+   */
+  searchBar?: ReactElement<SearchBarProps> | undefined;
   /**
    * Tint of the navigation bar and the toolbar, including the back button and
    * the header and toolbar items without their own `tintColor`.

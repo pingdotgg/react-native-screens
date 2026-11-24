@@ -418,6 +418,7 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
 #endif // Check for iOS >= 27 && !TARGET_OS_VISION && !TARGET_OS_TV
 
 #if !TARGET_OS_TV
+  [self applySearchControllerForController:controller];
   [controller setToolbarItems:nil animated:NO];
   navItem.prompt = nil;
   navItem.hidesBackButton = NO;
@@ -568,6 +569,7 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   navItem.scrollEdgeAppearance = _configDataProvider.scrollEdgeAppearance;
 
 #if !TARGET_OS_TV
+  [self applySearchControllerForController:controller];
   navItem.hidesBackButton = _configDataProvider.backButtonHidden;
 
   NSString *prompt = _configDataProvider.prompt;
@@ -604,6 +606,34 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
                                                                         : UINavigationItemLargeTitleDisplayModeNever;
 #endif // !TARGET_OS_TV
 }
+
+#if !TARGET_OS_TV
+- (void)applySearchControllerForController:(RNSStackScreenController *)controller
+{
+  UINavigationItem *navItem = controller.navigationItem;
+  UISearchController *searchController = _configDataProvider.searchController;
+  if (navItem.searchController != searchController) {
+    // Dismiss the old presentation before releasing or replacing its controller.
+    navItem.searchController.active = NO;
+    navItem.searchController = searchController;
+  }
+
+  BOOL hasSearch = searchController != nil;
+  navItem.hidesSearchBarWhenScrolling = !hasSearch || _configDataProvider.hidesSearchBarWhenScrolling;
+  if (@available(iOS 16.0, *)) {
+    navItem.preferredSearchBarPlacement =
+        hasSearch ? _configDataProvider.preferredSearchBarPlacement : UINavigationItemSearchBarPlacementAutomatic;
+  }
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (@available(iOS 26.0, *)) {
+    // Match the legacy header: stacked search must not be integrated into the toolbar.
+    navItem.searchBarPlacementAllowsToolbarIntegration = !hasSearch ||
+        (navItem.preferredSearchBarPlacement != UINavigationItemSearchBarPlacementStacked &&
+         _configDataProvider.searchBarAllowsToolbarIntegration);
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+}
+#endif // !TARGET_OS_TV
 
 #if !TARGET_OS_TV
 - (void)applyBackButtonConfigForController:(RNSStackScreenController *)controller

@@ -37,9 +37,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) UINavigationBarAppearance *standardAppearance;
 @property (nonatomic, readonly, nullable) UINavigationBarAppearance *scrollEdgeAppearance;
 
+#if !TARGET_OS_TV
+/**
+ Search controller of the header's search bar, or nil when the header has none.
+ The properties below are read only when it is set.
+ */
+@property (nonatomic, readonly, nullable) UISearchController *searchController;
+@property (nonatomic, readonly) BOOL hidesSearchBarWhenScrolling;
+@property (nonatomic, readonly) UINavigationItemSearchBarPlacement preferredSearchBarPlacement API_AVAILABLE(ios(16.0));
+@property (nonatomic, readonly) BOOL searchBarAllowsToolbarIntegration;
+#endif // !TARGET_OS_TV
+
 /**
  Children are expected to conform to either RNSStackHeaderItemDataProviding
- or RNSStackHeaderItemSpacerDataProviding, other types are ignored.
+ or RNSStackHeaderItemSpacerDataProviding, other types (e.g. the search bar) are ignored.
  */
 @property (nonatomic, readonly) NSArray<id> *children;
 

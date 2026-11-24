@@ -1,6 +1,7 @@
 #import "RNSStackHeaderConfigComponentView.h"
 #import "RNSConversions-Stack.h"
 #import "RNSConversions.h"
+#import "RNSSearchBar.h"
 #import "RNSStackHeaderAppearanceMapper.h"
 #import "RNSStackHeaderConfigEventEmitter.h"
 #import "RNSStackHeaderConfigShadowStateProxy.h"
@@ -27,14 +28,17 @@ namespace react = facebook::react;
 static void RNSAssertIsValidHeaderChild(UIView *child)
 {
   RCTAssert([child isKindOfClass:RNSStackHeaderItemComponentView.class] ||
-                [child isKindOfClass:RNSStackHeaderItemSpacerComponentView.class],
-            @"[RNScreens] Unexpected child of type: %@, expected %@ or %@",
+                [child isKindOfClass:RNSStackHeaderItemSpacerComponentView.class] ||
+                [child isKindOfClass:RNSSearchBar.class],
+            @"[RNScreens] Unexpected child of type: %@, expected %@, %@ or %@",
             child.class,
             RNSStackHeaderItemComponentView.class,
-            RNSStackHeaderItemSpacerComponentView.class);
+            RNSStackHeaderItemSpacerComponentView.class,
+            RNSSearchBar.class);
 }
 
-@interface RNSStackHeaderConfigComponentView () <RCTRNSStackHeaderConfigIOSViewProtocol>
+@interface RNSStackHeaderConfigComponentView () <RCTRNSStackHeaderConfigIOSViewProtocol,
+                                                 RNSSearchBarNavigationItemDelegate>
 @end
 
 @implementation RNSStackHeaderConfigComponentView {
@@ -95,6 +99,49 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   return [_children copy];
 }
 
+#pragma mark - Search bar
+
+- (nullable RNSSearchBar *)searchBar
+{
+  for (UIView *child in _children) {
+    if ([child isKindOfClass:RNSSearchBar.class]) {
+      return (RNSSearchBar *)child;
+    }
+  }
+  return nil;
+}
+
+#if !TARGET_OS_TV
+- (nullable UISearchController *)searchController
+{
+  return self.searchBar.controller;
+}
+
+- (BOOL)hidesSearchBarWhenScrolling
+{
+  return self.searchBar.hideWhenScrolling;
+}
+
+- (UINavigationItemSearchBarPlacement)preferredSearchBarPlacement
+{
+  RNSSearchBar *searchBar = self.searchBar;
+  return searchBar != nil ? [searchBar placementAsUINavigationItemSearchBarPlacement]
+                          : UINavigationItemSearchBarPlacementAutomatic;
+}
+
+- (BOOL)searchBarAllowsToolbarIntegration
+{
+  return self.searchBar.allowToolbarIntegration;
+}
+#endif // !TARGET_OS_TV
+
+#pragma mark - RNSSearchBarNavigationItemDelegate
+
+- (void)searchBarDidUpdateNavigationItem:(RNSSearchBar *)searchBar
+{
+  [self.headerCoordinator applyConfigProperties];
+}
+
 #pragma mark - UIView
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
@@ -144,6 +191,8 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
     ((RNSStackHeaderItemComponentView *)childComponentView).invalidationDelegate = self;
   } else if ([childComponentView isKindOfClass:RNSStackHeaderItemSpacerComponentView.class]) {
     ((RNSStackHeaderItemSpacerComponentView *)childComponentView).invalidationDelegate = self;
+  } else if ([childComponentView isKindOfClass:RNSSearchBar.class]) {
+    ((RNSSearchBar *)childComponentView).navigationItemDelegate = self;
   }
 
   [self.headerCoordinator rebuild];
@@ -157,6 +206,8 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
     ((RNSStackHeaderItemComponentView *)childComponentView).invalidationDelegate = nil;
   } else if ([childComponentView isKindOfClass:RNSStackHeaderItemSpacerComponentView.class]) {
     ((RNSStackHeaderItemSpacerComponentView *)childComponentView).invalidationDelegate = nil;
+  } else if ([childComponentView isKindOfClass:RNSSearchBar.class]) {
+    ((RNSSearchBar *)childComponentView).navigationItemDelegate = nil;
   }
 
   [_children removeObjectAtIndex:index];

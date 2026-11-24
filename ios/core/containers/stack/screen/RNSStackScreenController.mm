@@ -63,6 +63,13 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
   [super viewWillDisappear:animated];
+#if !TARGET_OS_TV
+  // Search is dismissed when the screen loses focus; returning does not focus it again.
+  UISearchController *searchController = self.navigationItem.searchController;
+  if (searchController.isActive) {
+    searchController.active = NO;
+  }
+#endif // !TARGET_OS_TV
   [_delegate viewControllerViewWillDisappear:self];
 }
 
