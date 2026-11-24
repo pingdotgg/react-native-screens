@@ -4,9 +4,24 @@
 #import "RNSContainerTransactionSupporting.h"
 #include "RNSStackNavigationBarCoordinator.h"
 
+@class RNSStackNavigationController;
 @class RNSStackScreenController;
 @protocol RNSViewControllerViewLifecycleEventsObserver;
 @protocol RNSViewFrameChangeDelegate;
+
+/**
+ * Observes the back gestures of an `RNSStackNavigationController`.
+ */
+@protocol RNSStackPopGestureObserver <NSObject>
+
+/**
+ * Called when a back gesture (edge or, on iOS 26, content swipe) has been recognized. It consumes the touch that
+ * started it, also when the pop is cancelled later.
+ */
+- (void)stackNavigationController:(nonnull RNSStackNavigationController *)navigationController
+           popGestureDidBegin:(nonnull UIGestureRecognizer *)gestureRecognizer;
+
+@end
 
 @interface RNSStackNavigationController : UINavigationController <RNSContainer, RNSContainerTransactionSupporting>
 
@@ -23,6 +38,8 @@
 @property (nonatomic, weak, nullable) id<RNSViewControllerViewLifecycleEventsObserver> viewLifecycleEventsObserver;
 
 @property (nonatomic, readonly, nonnull) RNSStackNavigationBarCoordinator *navigationBarCoordinator;
+
+@property (nonatomic, weak, nullable) id<RNSStackPopGestureObserver> popGestureObserver;
 
 #if !TARGET_OS_TV
 /**

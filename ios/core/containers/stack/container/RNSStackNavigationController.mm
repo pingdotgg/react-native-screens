@@ -93,12 +93,15 @@
   _edgePopGestureDelegate.navigationController = self;
   _edgePopGestureDelegate.originalDelegate = self.interactivePopGestureRecognizer.delegate;
   self.interactivePopGestureRecognizer.delegate = _edgePopGestureDelegate;
+  [self.interactivePopGestureRecognizer addTarget:self action:@selector(popGestureRecognizerDidChangeState:)];
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
   if (@available(iOS 26.0, *)) {
     _contentPopGestureDelegate = [RNSStackPopGestureDelegate new];
     _contentPopGestureDelegate.navigationController = self;
     _contentPopGestureDelegate.originalDelegate = self.interactiveContentPopGestureRecognizer.delegate;
     self.interactiveContentPopGestureRecognizer.delegate = _contentPopGestureDelegate;
+    [self.interactiveContentPopGestureRecognizer addTarget:self
+                                                    action:@selector(popGestureRecognizerDidChangeState:)];
   }
 #endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
 #endif // !TARGET_OS_TV
@@ -123,6 +126,15 @@
     _toolbarIconButtons[identifier] = button;
   }
   return button;
+}
+#endif // !TARGET_OS_TV
+
+#if !TARGET_OS_TV
+- (void)popGestureRecognizerDidChangeState:(UIGestureRecognizer *)gestureRecognizer
+{
+  if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+    [_popGestureObserver stackNavigationController:self popGestureDidBegin:gestureRecognizer];
+  }
 }
 #endif // !TARGET_OS_TV
 

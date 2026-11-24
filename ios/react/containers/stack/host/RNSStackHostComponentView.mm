@@ -10,6 +10,7 @@
 #import "RNSDefines.h"
 #import "RNSLog.h"
 
+#import "RCTSurfaceTouchHandler+RNSUtility.h"
 #import "RNSContainerHelpers.h"
 #import "RNSStackHeaderConfigComponentView.h"
 #import "RNSStackNavigationController.h"
@@ -18,7 +19,7 @@
 
 namespace react = facebook::react;
 
-@interface RNSStackHostComponentView () <RCTMountingTransactionObserving>
+@interface RNSStackHostComponentView () <RCTMountingTransactionObserving, RNSStackPopGestureObserver>
 @end
 
 @implementation RNSStackHostComponentView {
@@ -41,6 +42,7 @@ namespace react = facebook::react;
   _props = defaultProps;
 
   _stackNavigationController = [RNSStackNavigationController new];
+  _stackNavigationController.popGestureObserver = self;
   _stackOperationCoordinator = [RNSStackOperationCoordinator new];
   _renderedScreens = [NSMutableArray new];
 }
@@ -83,6 +85,23 @@ namespace react = facebook::react;
     }
   }
   return [super hitTest:point withEvent:event];
+}
+
+#pragma mark - RNSStackPopGestureObserver
+
+- (void)stackNavigationController:(RNSStackNavigationController *)navigationController
+           popGestureDidBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+  // A recognized back swipe consumes the active press, including when the pop is cancelled later. Find the nearest
+  // React touch handler: the root view's, a sheet's or a split column's.
+  for (UIView *view = gestureRecognizer.view; view != nil; view = view.superview) {
+    for (UIGestureRecognizer *recognizer in view.gestureRecognizers) {
+      if ([recognizer isKindOfClass:RCTSurfaceTouchHandler.class]) {
+        [static_cast<RCTSurfaceTouchHandler *>(recognizer) rnscreens_cancelTouches];
+        return;
+      }
+    }
+  }
 }
 
 #pragma mark - Communication with StackScreen
