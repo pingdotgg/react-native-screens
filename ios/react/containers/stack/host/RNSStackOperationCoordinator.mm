@@ -1,6 +1,7 @@
 #import "RNSStackOperationCoordinator.h"
 #import "RNSStackNavigationController.h"
 #import "RNSStackScreenComponentView.h"
+#import "RNSStackScreenController.h"
 
 @implementation RNSStackOperationCoordinator {
   NSMutableArray<RNSStackScreenComponentView *> *_Nonnull _pendingPushScreens;
