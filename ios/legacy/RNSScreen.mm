@@ -421,6 +421,11 @@ RNS_IGNORE_SUPER_CALL_END
   _statusBarHidden = statusBarHidden;
   [RNSScreenWindowTraits assertViewControllerBasedStatusBarAppearenceSet];
   [RNSScreenWindowTraits updateStatusBarAppearance];
+  // A full-screen modal owns the status bar, and the root's update doesn't reach it on iPhone Duo.
+  [UIView animateWithDuration:0.4
+                   animations:^{
+                     [self.controller setNeedsStatusBarAppearanceUpdate];
+                   }];
 
   // As the status bar could change its visibility, we need to calculate header
   // height for the correct value in `onHeaderHeightChange` event when navigation
