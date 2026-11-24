@@ -170,15 +170,27 @@ namespace react = facebook::react;
       return;
     }
 
-    UIView *contentView = _columnCoordinator.plainColumnContentView;
-    if (window != nil) {
-      if (_touchHandler == nil) {
-        _touchHandler = [RCTSurfaceTouchHandler new];
-      }
-      [_touchHandler attachToView:contentView];
-    } else {
-      [_touchHandler detachFromView:contentView];
+    [self updateTouchHandlerOfView:_columnCoordinator.plainColumnContentView inWindow:window];
+  }
+}
+
+/**
+ * @brief Attaches the touch handler to a view of the column shown outside the RN hierarchy, or detaches it.
+ *
+ * Like a presented screen, the column can move between windows without passing through nil, and the handler asserts
+ * on attaching twice or detaching from a view it is not attached to.
+ */
+- (void)updateTouchHandlerOfView:(UIView *)view inWindow:(nullable UIWindow *)window
+{
+  if (window != nil) {
+    if (_touchHandler == nil) {
+      _touchHandler = [RCTSurfaceTouchHandler new];
     }
+    if (_touchHandler.view == nil) {
+      [_touchHandler attachToView:view];
+    }
+  } else if (_touchHandler.view == view) {
+    [_touchHandler detachFromView:view];
   }
 }
 
