@@ -42,6 +42,7 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   RNSStackHeaderConfigShadowStateProxy *_Nonnull _shadowStateProxy;
   RNSStackHeaderConfigEventEmitter *_Nonnull _reactEventEmitter;
   NSMutableArray<id> *_children;
+  BOOL _hasAttachedToWindow;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -117,7 +118,14 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
 {
   if (self.window != nil) {
     [[self requireNavigationController] setNavigationBarFrameChangeDelegate:self];
-    [self.headerCoordinator rebuild];
+    if (_hasAttachedToWindow) {
+      // UIKit is already transitioning the retained screen's bar items. Replacing
+      // them on reattachment starts a second layout inside the moving glass.
+      [self.headerCoordinator applyConfigProperties];
+    } else {
+      [self.headerCoordinator rebuild];
+      _hasAttachedToWindow = YES;
+    }
   }
   [super didMoveToWindow];
 }
