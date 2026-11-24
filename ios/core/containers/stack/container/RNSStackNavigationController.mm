@@ -6,6 +6,7 @@
 #import "RNSStackNavigationBar.h"
 #import "RNSStackOperation.h"
 #import "RNSStackScreenController.h"
+#import "RNSStackScreenHeaderCoordinator.h"
 #import "RNSViewControllerViewLifecycleEventsObserver.h"
 #import "RNSViewFrameChangeDelegate.h"
 
@@ -13,6 +14,9 @@
   NSMutableArray<RNSPushOperation *> *_Nonnull _pendingPushOperations;
   NSMutableArray<RNSPopOperation *> *_Nonnull _pendingPopOperations;
   RNSParentContainerItemRegistry *_Nonnull _parentContainerRegistry;
+#if !TARGET_OS_TV
+  NSMutableDictionary<NSString *, UIBarButtonItem *> *_Nullable _toolbarIconButtons;
+#endif // !TARGET_OS_TV
 }
 
 - (instancetype)init
@@ -35,6 +39,61 @@
   _pendingPushOperations = [NSMutableArray array];
   _pendingPopOperations = [NSMutableArray array];
   _parentContainerRegistry = [RNSParentContainerItemRegistry new];
+}
+
+#if !TARGET_OS_TV
+- (UIBarButtonItem *)toolbarIconButtonForIdentifier:(NSString *)identifier
+{
+  if (_toolbarIconButtons == nil) {
+    _toolbarIconButtons = [NSMutableDictionary new];
+  }
+  UIBarButtonItem *button = _toolbarIconButtons[identifier];
+  if (button == nil) {
+    button = [[UIBarButtonItem alloc] initWithTitle:nil style:UIBarButtonItemStylePlain target:nil action:nil];
+    _toolbarIconButtons[identifier] = button;
+  }
+  return button;
+}
+#endif // !TARGET_OS_TV
+
+#pragma mark - Navigation
+
+/**
+ * UIKit reads the toolbar items of the incoming screen when the transition starts, so they are applied first.
+ */
+- (void)prepareToolbarForController:(nullable UIViewController *)controller
+{
+#if !TARGET_OS_TV
+  if ([controller isKindOfClass:RNSStackScreenController.class]) {
+    [static_cast<RNSStackScreenController *>(controller).headerCoordinator applyToolbarItemsInNavigationController:self];
+  }
+#endif // !TARGET_OS_TV
+}
+
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+  [self prepareToolbarForController:viewController];
+  [super pushViewController:viewController animated:animated];
+}
+
+- (UIViewController *)popViewControllerAnimated:(BOOL)animated
+{
+  if (self.viewControllers.count > 1) {
+    [self prepareToolbarForController:self.viewControllers[self.viewControllers.count - 2]];
+  }
+  return [super popViewControllerAnimated:animated];
+}
+
+- (NSArray<UIViewController *> *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+  [self prepareToolbarForController:viewController];
+  return [super popToViewController:viewController animated:animated];
+}
+
+- (NSArray<UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated
+{
+  [self prepareToolbarForController:self.viewControllers.firstObject];
+  return [super popToRootViewControllerAnimated:animated];
 }
 
 #pragma mark-- Layout

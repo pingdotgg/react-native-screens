@@ -162,6 +162,9 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   }
 
   [self applyConfigPropertiesForController:[self requireScreenController]];
+#if !TARGET_OS_TV
+  [self applyToolbarItemsForController:[self requireScreenController]];
+#endif // !TARGET_OS_TV
   [self updateNavigationBarVisibilityAnimated:YES];
 #if !TARGET_OS_TV
   [self updateToolbarVisibilityAnimated:YES];
@@ -173,6 +176,13 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 - (void)applyToolbarItems
 {
   [self applyToolbarItemsForController:[self requireScreenController]];
+}
+
+- (void)applyToolbarItemsInNavigationController:(RNSStackNavigationController *)navigationController
+{
+  [self applyToolbarItemsForController:[self requireScreenController]
+                  navigationController:navigationController
+                              activate:YES];
 }
 
 - (void)updateToolbarVisibilityAnimated:(BOOL)animated
@@ -619,8 +629,63 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 #if !TARGET_OS_TV
 - (void)applyToolbarItemsForController:(RNSStackScreenController *)controller
 {
+  RNSStackNavigationController *navController = [self getNavigationController];
+  [self applyToolbarItemsForController:controller
+                  navigationController:navController
+                              activate:navController.topViewController == controller];
+}
+
+/**
+ Hands the toolbar items to the controller. On iOS 26 a plain symbol button with an identifier is carried by one
+ button per identifier, shared by all screens of the navigation controller. UIKit's integrated-search morph can offset
+ an incoming icon inside its glass until the search field finishes laying out; keeping the same button, not only the
+ same transition identifier, avoids that. `activate` copies this screen's contents onto the shared button; a screen
+ that is not becoming visible leaves a button another screen already shows untouched.
+ */
+- (void)applyToolbarItemsForController:(RNSStackScreenController *)controller
+                  navigationController:(nullable RNSStackNavigationController *)navController
+                              activate:(BOOL)activate
+{
   // The navigation controller already animates toolbar contents during a push/pop.
   // Animating each Fabric rebuild again hides custom items until a second fade completes.
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (@available(iOS 26.0, *)) {
+    if (navController != nil) {
+      NSMutableArray<UIBarButtonItem *> *items = [NSMutableArray new];
+      for (UIBarButtonItem *source in _toolbarBarButtonItems) {
+        if (source.identifier.length == 0 || !source.image.isSymbolImage || source.customView != nil ||
+            source.menu != nil || source.style != UIBarButtonItemStylePlain) {
+          [items addObject:source];
+          continue;
+        }
+
+        UIBarButtonItem *button = [navController toolbarIconButtonForIdentifier:source.identifier];
+        if (!activate && button.image != nil) {
+          [items addObject:button];
+          continue;
+        }
+        // The screen's source item stays unchanged, so a pop or a cancelled
+        // interactive pop can restore that screen's image and action.
+        button.primaryAction = source.primaryAction;
+        button.target = source.target;
+        button.action = source.action;
+        button.title = source.title;
+        button.image = source.image;
+        button.tintColor = source.tintColor;
+        button.enabled = source.enabled;
+        button.hidden = source.hidden;
+        button.selected = source.selected;
+        button.accessibilityLabel = source.accessibilityLabel;
+        button.identifier = source.identifier;
+        button.hidesSharedBackground = source.hidesSharedBackground;
+        button.symbolAnimationEnabled = NO;
+        [items addObject:button];
+      }
+      [controller setToolbarItems:items animated:NO];
+      return;
+    }
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
   [controller setToolbarItems:[_toolbarBarButtonItems copy] animated:NO];
 }
 #endif // !TARGET_OS_TV

@@ -9,6 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class RNSStackNavigationController;
 @class RNSStackScreenController;
 
 @interface RNSStackScreenHeaderCoordinator : NSObject
@@ -55,6 +56,12 @@ NS_ASSUME_NONNULL_BEGIN
  * Hands this screen's toolbar items to its view controller.
  */
 - (void)applyToolbarItems;
+
+/**
+ * Hands this screen's toolbar items to its view controller before `navigationController` shows the screen, i.e.
+ * before UIKit reads the items of the incoming screen for its transition.
+ */
+- (void)applyToolbarItemsInNavigationController:(RNSStackNavigationController *)navigationController;
 
 /**
  * Shows the shared toolbar when the screen is on top and has toolbar items, hides it otherwise.
