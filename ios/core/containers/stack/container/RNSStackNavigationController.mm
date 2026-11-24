@@ -341,15 +341,33 @@
   }
 
   _performingReactUpdate = YES;
-  for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
-    RNSAssert([self.viewControllers count] > 1, @"[RNScreens] Attempt to pop last screen from the stack");
-    RNSAssert(self.topViewController == static_cast<UIViewController *>(op.screenController),
-              @"[RNScreens] Attempt to pop non-top screen");
-    [self popViewControllerAnimated:YES];
-  }
+  if (_pendingPopOperations.count > 0 && _pendingPushOperations.count > 0) {
+    // One React replacement must be one UIKit transition. Starting a push while
+    // the final pop animates can leave the old screen visible with the new stack.
+    NSMutableArray<UIViewController *> *controllers = [self.viewControllers mutableCopy];
+    for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
+      // The pushes below refill the stack, so a replacement may pop the root screen.
+      RNSAssert(controllers.count > 0, @"[RNScreens] Attempt to pop a screen from an empty stack");
+      RNSAssert(controllers.lastObject == static_cast<UIViewController *>(op.screenController),
+                @"[RNScreens] Attempt to pop non-top screen");
+      [controllers removeLastObject];
+    }
+    for (RNSPushOperation *op in _pendingPushOperations) {
+      [controllers addObject:op.screenController];
+    }
+    [self prepareToolbarForController:controllers.lastObject];
+    [self setViewControllers:controllers animated:YES];
+  } else {
+    for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
+      RNSAssert([self.viewControllers count] > 1, @"[RNScreens] Attempt to pop last screen from the stack");
+      RNSAssert(self.topViewController == static_cast<UIViewController *>(op.screenController),
+                @"[RNScreens] Attempt to pop non-top screen");
+      [self popViewControllerAnimated:YES];
+    }
 
-  for (RNSPushOperation *op in _pendingPushOperations) {
-    [self pushViewController:op.screenController animated:YES];
+    for (RNSPushOperation *op in _pendingPushOperations) {
+      [self pushViewController:op.screenController animated:YES];
+    }
   }
 
   RNSAssert([self.viewControllers count] > 0, @"[RNScreens] Stack should never be empty after updates");
