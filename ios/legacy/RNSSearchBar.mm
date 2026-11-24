@@ -108,6 +108,7 @@ static id RNSAddObserverRemovedWithSearchField(
 @implementation RNSSearchBar {
   UISearchController *_controller;
   UIColor *_textColor;
+  BOOL _focusRequested;
 
   // We use those booleans to log a warning if user attempts to restore
   // default behavior after setting explicit value for the prop.
@@ -401,6 +402,7 @@ static id RNSAddObserverRemovedWithSearchField(
 #if !TARGET_OS_TV
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
 {
+  _focusRequested = NO;
   _controller.searchBar.text = @"";
   [self resignFirstResponder];
   [self hideCancelButton];
@@ -412,12 +414,33 @@ static id RNSAddObserverRemovedWithSearchField(
 
 - (void)blur
 {
+  _focusRequested = NO;
   [_controller.searchBar resignFirstResponder];
 }
 
 - (void)focus
 {
-  [_controller.searchBar becomeFirstResponder];
+  _focusRequested = YES;
+  // Fabric can attach search and request focus in the same mounting transaction.
+  __weak RNSSearchBar *weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RNSSearchBar *strongSelf = weakSelf;
+    if (strongSelf == nil || !strongSelf->_focusRequested) {
+      return;
+    }
+    strongSelf->_focusRequested = NO;
+#if !TARGET_OS_TV
+    // Integrated search replaces its field during layout. The configuration view
+    // is not mounted, so lay out its header's window before focusing that field.
+    id<RNSSearchBarNavigationItemDelegate> header = strongSelf.navigationItemDelegate;
+    if ([header isKindOfClass:UIView.class]) {
+      [((UIView *)header).window layoutIfNeeded];
+    }
+    [strongSelf->_controller.searchBar.searchTextField becomeFirstResponder];
+#else
+    [strongSelf->_controller.searchBar becomeFirstResponder];
+#endif
+  });
 }
 
 - (void)clearText
