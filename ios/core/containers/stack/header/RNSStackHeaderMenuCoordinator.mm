@@ -253,7 +253,7 @@
               }];
   toggleAction.state = isItemToggledOn ? UIMenuElementStateOn : UIMenuElementStateOff;
 
-  [self decorateActionKeepsMenuPresented:toggleAction withData:data];
+  [self decorateAction:toggleAction withData:data];
 
   return toggleAction;
 }
@@ -284,7 +284,7 @@
                                          [weakDelegate didPressMenuItem:data.menuElementId];
                                        }];
 
-  [self decorateActionKeepsMenuPresented:action withData:data];
+  [self decorateAction:action withData:data];
 
   return action;
 }
@@ -333,8 +333,16 @@
   }
 }
 
-+ (void)decorateActionKeepsMenuPresented:(UIAction *)action withData:(RNSStackHeaderMenuItemData *)data
++ (void)decorateAction:(UIAction *)action withData:(RNSStackHeaderMenuItemData *)data
 {
+  if (data.disabled) {
+    action.attributes |= UIMenuElementAttributesDisabled;
+  }
+  if (data.destructive) {
+    action.attributes |= UIMenuElementAttributesDestructive;
+  }
+  action.subtitle = data.subtitle;
+
   if (data.keepsMenuPresented) {
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(16_0) || (TARGET_OS_TV && __TV_OS_VERSION_MAX_ALLOWED >= 160000)
     if (@available(iOS 16.0, tvOS 16.0, *)) {

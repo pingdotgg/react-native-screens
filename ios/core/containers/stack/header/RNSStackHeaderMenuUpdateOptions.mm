@@ -30,6 +30,9 @@
 
   return [[RNSStackHeaderMenuItemData alloc] initWithId:old.menuElementId
                                                   title:title
+                                               subtitle:old.subtitle
+                                               disabled:old.disabled
+                                            destructive:old.destructive
                                                itemType:old.itemType
                                      initialToggleState:old.initialToggleState
                                      keepsMenuPresented:old.keepsMenuPresented
