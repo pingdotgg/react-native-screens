@@ -130,6 +130,13 @@ static const CGFloat epsilon = 1e-6;
     _controller.behaviorProvider = self;
     _controller.columnsProvider = self;
     _controller.orientationDelegate = self;
+
+    // Columns mount before the host reaches the window, i.e. before the controller exists, when the host is
+    // rendered off screen (e.g. in an unselected tab). Hand them over now, as no later transaction may touch them.
+    if (_reactSubviews.count > 0) {
+      [_controller setNeedsUpdateOfChildViewControllers];
+      [_controller commitTransaction];
+    }
   }
 }
 
