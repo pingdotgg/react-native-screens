@@ -1133,6 +1133,14 @@ export interface SearchBarProps {
    */
   cancelButtonText?: string | undefined;
   /**
+   * Hides the cancel button, including while the search field is focused.
+   * Use when another control provides the search dismissal action.
+   * Defaults to `false`.
+   *
+   * @platform ios
+   */
+  cancelButtonHidden?: boolean | undefined;
+  /**
    * Specifies whether the back button should close search bar's text input or not.
    *
    * @platform android

@@ -30,6 +30,7 @@
 @property (nonatomic, weak, nullable) id<RNSSearchBarNavigationItemDelegate> navigationItemDelegate;
 
 @property (nonatomic) BOOL hideWhenScrolling;
+@property (nonatomic) BOOL cancelButtonHidden;
 @property (nonatomic) RNSSearchBarPlacement placement;
 @property (nonatomic) BOOL allowToolbarIntegration;
 

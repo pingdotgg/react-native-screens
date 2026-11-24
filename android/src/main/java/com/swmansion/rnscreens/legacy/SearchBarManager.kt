@@ -198,6 +198,11 @@ class SearchBarManager :
         value: String?,
     ) = Unit
 
+    override fun setCancelButtonHidden(
+        view: SearchBarView?,
+        value: Boolean,
+    ) = Unit
+
     override fun setCancelButtonText(
         view: SearchBarView?,
         value: String?,

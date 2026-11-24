@@ -287,6 +287,17 @@ static id RNSAddObserverRemovedWithSearchField(
   [_controller.searchBar setValue:text forKey:@"cancelButtonText"];
 }
 
+- (void)setCancelButtonHidden:(BOOL)cancelButtonHidden
+{
+  _cancelButtonHidden = cancelButtonHidden;
+#if !TARGET_OS_TV
+  // Configure this before focus: changing the cancel control during activation
+  // rebuilds UIKit's integrated search field and can dismiss its keyboard.
+  [_controller.searchBar setShowsCancelButton:NO animated:NO];
+  _controller.automaticallyShowsCancelButton = !cancelButtonHidden;
+#endif
+}
+
 - (void)hideCancelButton
 {
 #if !TARGET_OS_TV
@@ -302,7 +313,7 @@ static id RNSAddObserverRemovedWithSearchField(
 - (void)showCancelButton
 {
 #if !TARGET_OS_TV
-  if (!_controller.automaticallyShowsCancelButton) {
+  if (!_cancelButtonHidden && !_controller.automaticallyShowsCancelButton) {
     [_controller.searchBar setShowsCancelButton:YES animated:YES];
   } else {
     // On iOS 13+ UISearchController automatically shows/hides cancel button
@@ -417,7 +428,7 @@ static id RNSAddObserverRemovedWithSearchField(
 - (void)toggleCancelButton:(BOOL)flag
 {
 #if !TARGET_OS_TV
-  [_controller.searchBar setShowsCancelButton:flag animated:YES];
+  [_controller.searchBar setShowsCancelButton:flag && !_cancelButtonHidden animated:YES];
 #endif
 }
 
@@ -443,6 +454,10 @@ static id RNSAddObserverRemovedWithSearchField(
 
   if (oldScreenProps.hideWhenScrolling != newScreenProps.hideWhenScrolling) {
     [self setHideWhenScrolling:newScreenProps.hideWhenScrolling];
+  }
+
+  if (oldScreenProps.cancelButtonHidden != newScreenProps.cancelButtonHidden) {
+    self.cancelButtonHidden = newScreenProps.cancelButtonHidden;
   }
 
   if (oldScreenProps.cancelButtonText != newScreenProps.cancelButtonText) {

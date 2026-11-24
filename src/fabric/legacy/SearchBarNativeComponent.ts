@@ -56,6 +56,7 @@ export interface NativeProps extends ViewProps {
   obscureBackground?: CT.WithDefault<OptionalBoolean, 'undefined'>;
   hideNavigationBar?: CT.WithDefault<OptionalBoolean, 'undefined'>;
   cancelButtonText?: string | undefined;
+  cancelButtonHidden?: CT.WithDefault<boolean, false>;
   // TODO: implement these on iOS
   barTintColor?: ColorValue | undefined;
   tintColor?: ColorValue | undefined;
