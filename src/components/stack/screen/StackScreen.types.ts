@@ -183,4 +183,15 @@ export type StackScreenProps = {
    * @platform android
    */
   replaceAnimation?: StackScreenReplaceAnimation | undefined;
+  /**
+   * Whether UIKit animates pushing this screen onto the stack.
+   *
+   * @remarks
+   * Set it to `false` for a screen that should appear in place, e.g. a page
+   * opened while its stack is not visible. Pops are not affected.
+   *
+   * @defaultValue `true`
+   * @platform ios
+   */
+  animatesPush?: boolean | undefined;
 };

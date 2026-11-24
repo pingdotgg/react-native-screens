@@ -68,6 +68,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable UIScrollView *)cachedContentScrollView;
 
+/**
+ * Whether pushing the screen onto the stack is animated.
+ */
+@property (nonatomic, readonly) BOOL animatesPush;
+
 @optional
 
 /**

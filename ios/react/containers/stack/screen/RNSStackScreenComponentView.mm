@@ -104,6 +104,7 @@ namespace react = facebook::react;
   _screenKey = nil;
   _activityMode = RNSStackScreenActivityModeDetached;
   _preventNativeDismiss = NO;
+  _animatesPush = YES;
 }
 
 - (void)setupController
@@ -250,6 +251,10 @@ RNS_IGNORE_SUPER_CALL_END
   if (oldComponentProps.screenKey != newComponentProps.screenKey) {
     RCTAssert(_screenKey == nil, @"[RNScreens] ScreenController cannot change its screenKey");
     _screenKey = RCTNSStringFromStringNilIfEmpty(newComponentProps.screenKey);
+  }
+
+  if (oldComponentProps.animatesPush != newComponentProps.animatesPush) {
+    _animatesPush = newComponentProps.animatesPush;
   }
 
   if (oldComponentProps.reportsFrameToShadowTree != newComponentProps.reportsFrameToShadowTree) {

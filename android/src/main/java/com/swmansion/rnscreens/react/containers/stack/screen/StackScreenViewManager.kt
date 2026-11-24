@@ -186,6 +186,13 @@ internal class StackScreenViewManager :
         // iOS only.
     }
 
+    override fun setAnimatesPush(
+        view: StackScreen,
+        value: Boolean,
+    ) {
+        // iOS only.
+    }
+
     companion object {
         const val REACT_CLASS = "RNSStackScreen"
         private const val TAG = "StackScreenViewManager"

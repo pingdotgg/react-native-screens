@@ -237,6 +237,15 @@
   return [super popToRootViewControllerAnimated:animated];
 }
 
+/**
+ * A screen without a config provider, e.g. the root of a plain Split column, animates by default.
+ */
+- (BOOL)animatesPushOf:(RNSStackScreenController *)screenController
+{
+  id<RNSStackContainerItemConfigProviding> configProvider = screenController.configProvider;
+  return configProvider == nil || configProvider.animatesPush;
+}
+
 #pragma mark - Empty stack
 
 - (void)setAllowsEmptyStack:(BOOL)allowsEmptyStack
@@ -405,7 +414,8 @@
       [controllers addObject:op.screenController];
     }
     [self prepareToolbarForController:controllers.lastObject];
-    [self setViewControllers:controllers animated:YES];
+    [self setViewControllers:controllers
+                    animated:[self animatesPushOf:_pendingPushOperations.lastObject.screenController]];
   } else {
     for (RNSPopOperation *op in _pendingPopOperations) {
       RNSAssert(_allowsEmptyStack ? !self.isStackEmpty : [self.viewControllers count] > 1,
@@ -427,7 +437,8 @@
         [self prepareToolbarForController:op.screenController];
         [self setViewControllers:@[ op.screenController ] animated:NO];
       } else {
-        [self pushViewController:op.screenController animated:op == _pendingPushOperations.lastObject];
+        [self pushViewController:op.screenController
+                        animated:op == _pendingPushOperations.lastObject && [self animatesPushOf:op.screenController]];
       }
     }
   }

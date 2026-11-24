@@ -26,6 +26,7 @@ function StackScreen({
   preventNativeDismiss,
   animation,
   replaceAnimation,
+  animatesPush,
 }: StackScreenProps) {
   const onDismissWrapper = React.useCallback<
     NativeEventHandler<OnDismissEventPayload>
@@ -66,6 +67,7 @@ function StackScreen({
       preventNativeDismiss={preventNativeDismiss}
       animation={animation}
       replaceAnimation={replaceAnimation}
+      animatesPush={animatesPush}
       reportsFrameToShadowTree={isSplitColumnContent}>
       <SplitColumnMarkerContext.Provider value={false}>
         {children}

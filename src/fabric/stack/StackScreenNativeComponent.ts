@@ -105,6 +105,7 @@ export interface NativeProps extends ViewProps {
   preventNativeDismiss?: CT.WithDefault<boolean, false>;
   animation?: UnsafeMixed<StackScreenAnimation> | undefined;
   replaceAnimation?: CT.WithDefault<StackScreenReplaceAnimation, 'pop'>;
+  animatesPush?: CT.WithDefault<boolean, true>;
 
   // Internal, iOS. The screen is placed by a native container that Yoga does
   // not lay out, so it reports the frame it got there to the shadow tree
