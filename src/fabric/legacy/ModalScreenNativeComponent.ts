@@ -95,6 +95,7 @@ export interface NativeProps extends ViewProps {
   sheetBackgroundEffect?: CT.WithDefault<SheetBackgroundEffect, 'automatic'>;
   sheetLargestUndimmedDetent?: CT.WithDefault<CT.Int32, -1>;
   sheetGrabberVisible?: CT.WithDefault<boolean, false>;
+  sheetPrefersHorizontalBars?: CT.WithDefault<boolean, false>;
   sheetCornerRadius?: CT.WithDefault<CT.Float, -1.0>;
   sheetExpandsWhenScrolledToEdge?: CT.WithDefault<boolean, false>;
   sheetInitialDetent?: CT.WithDefault<CT.Int32, 0>;

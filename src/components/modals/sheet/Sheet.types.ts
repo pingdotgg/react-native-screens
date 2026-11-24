@@ -144,6 +144,7 @@ export interface SheetProps {
   isOpen: boolean;
   detents?: SheetDetents | undefined;
   prefersGrabberVisible?: boolean | undefined;
+  prefersHorizontalBars?: boolean | undefined;
   preferredCornerRadius?: SheetPreferredCornerRadius | undefined;
   largestUndimmedDetentIndex?: SheetLargestUndimmedDetentIndex | undefined;
   initialDetentIndex?: SheetInitialDetentIndex | undefined;

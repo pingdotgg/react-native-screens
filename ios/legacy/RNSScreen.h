@@ -117,6 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSArray<NSNumber *> *sheetAllowedDetents;
 @property (nonatomic) NSNumber *sheetLargestUndimmedDetent;
 @property (nonatomic) BOOL sheetGrabberVisible;
+@property (nonatomic) BOOL sheetPrefersHorizontalBars;
 @property (nonatomic) CGFloat sheetCornerRadius;
 @property (nonatomic) NSInteger sheetInitialDetent;
 @property (nonatomic) BOOL sheetExpandsWhenScrolledToEdge;

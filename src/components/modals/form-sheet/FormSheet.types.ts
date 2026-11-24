@@ -123,6 +123,17 @@ export interface FormSheetProps {
   prefersGrabberVisible?: boolean | undefined;
 
   /**
+   * Requests horizontal bars instead of the vertical bar on iPhone Duo.
+   *
+   * @remarks
+   * Leave unset to let UIKit place native controls in the vertical bar.
+   *
+   * @defaultValue `false`
+   * @platform ios >= 27.1
+   */
+  prefersHorizontalBars?: boolean | undefined;
+
+  /**
    * The corner radius that the sheet will attempt to present with.
    *
    * @remarks

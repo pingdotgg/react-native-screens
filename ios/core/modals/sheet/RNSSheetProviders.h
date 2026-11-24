@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol RNSSheetAppearanceProvider <NSObject>
 
 - (BOOL)prefersGrabberVisible;
+- (BOOL)prefersHorizontalBars;
 - (CGFloat)preferredCornerRadius;
 - (NSInteger)largestUndimmedDetentIndex;
 - (nullable UIColor *)nativeContainerBackgroundColor;

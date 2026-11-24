@@ -98,6 +98,11 @@ class SheetHostViewManager :
         view.prefersGrabberVisible = value
     }
 
+    override fun setPrefersHorizontalBars(
+        view: SheetHost,
+        value: Boolean,
+    ) = Unit // iOS-only bar placement preference.
+
     override fun setPreferredCornerRadius(
         view: SheetHost,
         value: Float,

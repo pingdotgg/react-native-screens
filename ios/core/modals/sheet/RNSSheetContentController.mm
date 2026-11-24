@@ -7,6 +7,7 @@
 #import "RNSSheetUpdateFlags.h"
 
 #import "RNSAssert.h"
+#import "RNSDefines.h"
 
 #include <optional>
 
@@ -96,6 +97,16 @@
             @"[RNScreens] ContentView must be of type RNSSheetContentView");
   return static_cast<RNSSheetContentView *>(self.view);
 }
+
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+- (UIVerticalBarBehavior)preferredVerticalBarBehavior API_AVAILABLE(ios(27.1))
+{
+  if (self.appearanceProvider.prefersHorizontalBars) {
+    return UIVerticalBarBehaviorDisabled;
+  }
+  return [super preferredVerticalBarBehavior];
+}
+#endif
 
 #pragma mark - UIKit callbacks
 
