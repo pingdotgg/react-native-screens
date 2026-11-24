@@ -63,6 +63,7 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   _title = nil;
   _subtitle = nil;
   _hidden = NO;
+  _backButtonHidden = NO;
   _largeTitle = nil;
   _largeSubtitle = nil;
   _largeTitleEnabled = NO;
@@ -408,6 +409,10 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
 
   if (oldHeaderProps.hidden != newHeaderProps.hidden) {
     _hidden = newHeaderProps.hidden;
+  }
+
+  if (oldHeaderProps.backButtonHidden != newHeaderProps.backButtonHidden) {
+    _backButtonHidden = newHeaderProps.backButtonHidden;
   }
 
   if (oldHeaderProps.largeTitle != newHeaderProps.largeTitle) {

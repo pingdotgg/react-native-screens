@@ -71,7 +71,7 @@ export interface StackHeaderConfigPropsBase {
    * button is always hidden.
    *
    * @defaultValue `false`
-   * @platform android
+   * @platform android, ios
    */
   backButtonHidden?: boolean | undefined;
 }
