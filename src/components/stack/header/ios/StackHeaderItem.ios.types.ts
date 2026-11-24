@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import type { ColorValue } from 'react-native';
 import type { PlatformIconIOS } from '../../../shared/types';
 import type {
+  StackHeaderItemAxisBehaviorIOS,
   StackHeaderItemVariantIOS,
   StackHeaderItemVisibilityPriorityIOS,
 } from '../StackHeaderConfig.ios.types';
@@ -20,6 +21,7 @@ export type StackHeaderItemProps = {
   itemId?: string | undefined;
   identifier?: string | undefined;
   hidesSharedBackground?: boolean | undefined;
+  axisBehavior?: StackHeaderItemAxisBehaviorIOS | undefined;
   visibilityPriority?: StackHeaderItemVisibilityPriorityIOS | undefined;
   title?: string | undefined;
   icon?: PlatformIconIOS | undefined;

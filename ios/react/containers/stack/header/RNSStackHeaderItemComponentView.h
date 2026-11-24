@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL disabled;
 @property (nonatomic, readonly) BOOL respondsToOnPress;
 @property (nonatomic, readonly) BOOL hidesSharedBackground;
+@property (nonatomic, readonly) RNSHeaderItemAxisBehavior axisBehavior;
 @property (nonatomic, readonly) RNSHeaderItemVisibilityPriority visibilityPriority;
 
 @property (nonatomic, nullable) NSString *titleProp;

@@ -18,6 +18,11 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
     RNSHeaderItemVisibilityPriority visibilityPriority);
 #endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_TV && !TARGET_OS_VISION
 
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+API_AVAILABLE(ios(27.1))
+static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(RNSHeaderItemAxisBehavior axisBehavior);
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+
 @implementation RNSStackScreenHeaderCoordinator {
   __weak RNSStackScreenController *_Nullable _screenController;
 
@@ -773,6 +778,14 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   }
 #endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_TV && !TARGET_OS_VISION
 
+// tvOS and visionOS are excluded on purpose: they declare `axisBehavior`, but not the values other than `automatic`.
+// Applied here rather than in the content factory, so that it also reaches bar items created by UIKit.
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+  if (@available(iOS 27.1, *)) {
+    barButtonItem.axisBehavior = RNSBarButtonItemAxisBehaviorFromAxisBehavior(item.axisBehavior);
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+
   if (item.menu != nil && item.itemId != nil) {
     RNSStackHeaderMenuToggleStateTracker *tracker = [_trackerRegistry trackerForItemId:item.itemId];
     __weak auto weakSelf = self;
@@ -828,3 +841,21 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   }
 }
 #endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_0) && !TARGET_OS_TV && !TARGET_OS_VISION
+
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+API_AVAILABLE(ios(27.1))
+static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(RNSHeaderItemAxisBehavior axisBehavior)
+{
+  switch (axisBehavior) {
+    case RNSHeaderItemAxisBehaviorAutomatic:
+      return UIBarButtonItemAxisBehaviorAutomatic;
+    case RNSHeaderItemAxisBehaviorHorizontalOnly:
+      return UIBarButtonItemAxisBehaviorHorizontalOnly;
+    case RNSHeaderItemAxisBehaviorVerticalPreferred:
+      return UIBarButtonItemAxisBehaviorVerticalPreferred;
+    default:
+      RNSLogE(@"[RNScreens] Unsupported axis behavior");
+      return UIBarButtonItemAxisBehaviorAutomatic;
+  }
+}
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION

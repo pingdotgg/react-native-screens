@@ -191,6 +191,42 @@ export interface StackHeaderSupportsVisibilityPriorityIOS {
 }
 
 /**
+ * Supported bar axes and preferred placement of a header item.
+ *
+ * @remarks
+ * The following values are supported:
+ * - `'automatic'` — UIKit infers the supported axes from the item's contents.
+ * - `'horizontalOnly'` — the item only supports horizontal bars. It is hidden
+ *   when no horizontal bar is present.
+ * - `'verticalPreferred'` — the item supports both axes and prefers the
+ *   vertical bar when both are present.
+ *
+ * @see {@link https://developer.apple.com/documentation/uikit/uibarbuttonitem/axisbehavior-swift.property | UIBarButtonItem.axisBehavior}
+ */
+export type StackHeaderItemAxisBehaviorIOS =
+  | 'automatic'
+  | 'horizontalOnly'
+  | 'verticalPreferred';
+
+/**
+ * Field of a header item that sets the bar axes it supports.
+ */
+export interface StackHeaderSupportsAxisBehaviorIOS {
+  /**
+   * Supported bar axes and preferred placement of this item, e.g. on the open
+   * display of iPhone Duo, where icon items can move into a vertical rail.
+   *
+   * @remarks
+   * Removing this option restores `'automatic'`. Ignored when built with an
+   * SDK older than iOS 27.1.
+   *
+   * @defaultValue `'automatic'`
+   * @platform ios >= 27.1
+   */
+  axisBehavior?: StackHeaderItemAxisBehaviorIOS | undefined;
+}
+
+/**
  * Field of a header item that identifies it across screens for transition
  * animations.
  */
@@ -230,6 +266,7 @@ export interface StackHeaderInlineItemIOS
   extends StackHeaderItemBaseIOS,
     StackHeaderSupportsMenuIOS,
     StackHeaderSupportsIdentifierIOS,
+    StackHeaderSupportsAxisBehaviorIOS,
     StackHeaderSupportsSharedBackgroundIOS,
     StackHeaderSupportsVisibilityPriorityIOS {
   /**
@@ -287,6 +324,7 @@ export interface StackHeaderInlineItemIOS
 export interface StackHeaderInlineCustomItemIOS
   extends StackHeaderSupportsMenuIOS,
     StackHeaderSupportsIdentifierIOS,
+    StackHeaderSupportsAxisBehaviorIOS,
     StackHeaderSupportsSharedBackgroundIOS,
     StackHeaderSupportsVisibilityPriorityIOS {
   /**

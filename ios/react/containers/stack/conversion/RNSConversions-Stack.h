@@ -4,6 +4,7 @@
 
 #import <react/renderer/components/rnscreens/Props.h>
 #import "RNSDefines.h"
+#import "RNSHeaderItemAxisBehavior.h"
 #import "RNSHeaderItemPlacement.h"
 #import "RNSHeaderItemSpacerPlacement.h"
 #import "RNSHeaderItemVisibilityPriority.h"
@@ -61,6 +62,10 @@ UIBarMinimizationSafeAreaAdjustmentFromReactRNSStackHeaderConfigIOSSafeAreaAdjus
 RNSHeaderItemVisibilityPriority
 RNSHeaderItemVisibilityPriorityFromReactRNSStackHeaderItemIOSVisibilityPriority(
     react::RNSStackHeaderItemIOSVisibilityPriority visibilityPriority);
+
+RNSHeaderItemAxisBehavior
+RNSHeaderItemAxisBehaviorFromReactRNSStackHeaderItemIOSAxisBehavior(
+    react::RNSStackHeaderItemIOSAxisBehavior axisBehavior);
 
 }; // namespace rnscreens::conversion
 

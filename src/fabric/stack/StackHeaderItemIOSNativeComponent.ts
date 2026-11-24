@@ -73,11 +73,17 @@ export type PlatformIconIOS =
 
 export type StackHeaderItemVisibilityPriorityIOS = 'low' | 'standard' | 'high';
 
+export type StackHeaderItemAxisBehaviorIOS =
+  | 'automatic'
+  | 'horizontalOnly'
+  | 'verticalPreferred';
+
 export interface NativeProps extends ViewProps {
   placement?: CT.WithDefault<Placement, 'trailing'>;
   itemId?: string | undefined;
   identifier?: string | undefined;
   hidesSharedBackground?: CT.WithDefault<boolean, false>;
+  axisBehavior?: CT.WithDefault<StackHeaderItemAxisBehaviorIOS, 'automatic'>;
   visibilityPriority?: CT.WithDefault<
     StackHeaderItemVisibilityPriorityIOS,
     'standard'

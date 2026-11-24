@@ -57,6 +57,7 @@ namespace react = facebook::react;
   _disabled = NO;
   _respondsToOnPress = NO;
   _hidesSharedBackground = NO;
+  _axisBehavior = RNSHeaderItemAxisBehaviorAutomatic;
   _visibilityPriority = RNSHeaderItemVisibilityPriorityStandard;
 }
 
@@ -271,6 +272,19 @@ RNS_IGNORE_SUPER_CALL_END
   if (oldItemProps.hidesSharedBackground != newItemProps.hidesSharedBackground) {
     _hidesSharedBackground = newItemProps.hidesSharedBackground;
     needsUpdate = YES;
+  }
+
+  if (oldItemProps.axisBehavior != newItemProps.axisBehavior) {
+    _axisBehavior =
+        rnscreens::conversion::RNSHeaderItemAxisBehaviorFromReactRNSStackHeaderItemIOSAxisBehavior(
+            newItemProps.axisBehavior);
+// tvOS and visionOS are excluded on purpose: they declare `axisBehavior`, but not the values other than `automatic`.
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
+    // The item is rebuilt only on iOS 27.1+, where the behavior is actually applied.
+    if (@available(iOS 27.1, *)) {
+      needsUpdate = YES;
+    }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(27_1) && !TARGET_OS_TV && !TARGET_OS_VISION
   }
 
   if (oldItemProps.visibilityPriority != newItemProps.visibilityPriority) {

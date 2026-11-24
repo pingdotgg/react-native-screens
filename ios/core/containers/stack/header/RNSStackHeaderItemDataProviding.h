@@ -2,6 +2,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "RNSHeaderItemAxisBehavior.h"
 #import "RNSHeaderItemPlacement.h"
 #import "RNSHeaderItemVisibilityPriority.h"
 #import "RNSStackHeaderIconData.h"
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL disabled;
 @property (nonatomic, readonly) BOOL respondsToOnPress;
 @property (nonatomic, readonly) BOOL hidesSharedBackground;
+@property (nonatomic, readonly) RNSHeaderItemAxisBehavior axisBehavior;
 @property (nonatomic, readonly) RNSHeaderItemVisibilityPriority visibilityPriority;
 
 @end

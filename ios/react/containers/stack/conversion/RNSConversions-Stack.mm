@@ -147,4 +147,17 @@ RNSHeaderItemVisibilityPriority RNSHeaderItemVisibilityPriorityFromReactRNSStack
   }
 }
 
+RNSHeaderItemAxisBehavior RNSHeaderItemAxisBehaviorFromReactRNSStackHeaderItemIOSAxisBehavior(
+    react::RNSStackHeaderItemIOSAxisBehavior axisBehavior)
+{
+  switch (axisBehavior) {
+    case react::RNSStackHeaderItemIOSAxisBehavior::Automatic:
+      return RNSHeaderItemAxisBehaviorAutomatic;
+    case react::RNSStackHeaderItemIOSAxisBehavior::HorizontalOnly:
+      return RNSHeaderItemAxisBehaviorHorizontalOnly;
+    case react::RNSStackHeaderItemIOSAxisBehavior::VerticalPreferred:
+      return RNSHeaderItemAxisBehaviorVerticalPreferred;
+  }
+}
+
 }; // namespace rnscreens::conversion
