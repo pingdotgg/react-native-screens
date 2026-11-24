@@ -1,4 +1,7 @@
 #import <UIKit/UIKit.h>
+#import <dlfcn.h>
+#import <objc/runtime.h>
+#import <atomic>
 
 #import "RNSDefines.h"
 #import "RNSSearchBar.h"
@@ -14,6 +17,94 @@
 
 namespace react = facebook::react;
 
+#if !TARGET_OS_TV
+// UIKit's search text field observes its text storage's edits on the main queue, filtered by the
+// storage's address, and never removes that observer; the search bar also replaces its field when the
+// search placement changes. Once a storage is freed, React Native can create one at the same address on
+// the JS thread to measure text, and that edit then waits for the main thread while it holds the text
+// measurement lock; a main thread that measures text at that moment deadlocks. An observer filtered by a
+// freed object can never fire for it, so that registration is removed as its storage is freed. Only
+// UIKit's own registration is touched: its block function is learned while the first search controller
+// is created, and every other observer keeps its lifetime.
+@interface RNSSearchFieldObserverRemover : NSObject
+@end
+
+@implementation RNSSearchFieldObserverRemover {
+  // Weak, so the storage this remover is attached to adds no reference to UIKit's observer.
+  __weak id _observer;
+}
+
+- (instancetype)initWithObserver:(id)observer
+{
+  if (self = [super init]) {
+    _observer = observer;
+  }
+  return self;
+}
+
+- (void)dealloc
+{
+  id observer = _observer;
+  if (observer != nil) {
+    [NSNotificationCenter.defaultCenter removeObserver:observer];
+  }
+}
+
+@end
+
+static id (*RNSAddObserverWithBlock)(id, SEL, NSNotificationName, id, NSOperationQueue *, void (^)(NSNotification *));
+static BOOL RNSLearningSearchFieldObserver = NO;
+static std::atomic<void *> RNSSearchFieldObserverInvoke{nullptr};
+
+static void *RNSBlockInvoke(id block)
+{
+  // The Clang block ABI places the invoke function after isa, flags and reserved.
+  struct RNSBlockLayout {
+    void *isa;
+    int flags;
+    int reserved;
+    void *invoke;
+  };
+  return ((__bridge struct RNSBlockLayout *)block)->invoke;
+}
+
+static BOOL RNSIsUIKitFunction(void *function)
+{
+  Dl_info functionImage;
+  Dl_info uikitImage;
+  return dladdr(function, &functionImage) != 0 && dladdr((__bridge void *)UISearchTextField.class, &uikitImage) != 0 &&
+      functionImage.dli_fbase == uikitImage.dli_fbase;
+}
+
+static id RNSAddObserverRemovedWithSearchField(
+    NSNotificationCenter *center,
+    SEL selector,
+    NSNotificationName name,
+    id object,
+    NSOperationQueue *queue,
+    void (^block)(NSNotification *))
+{
+  id observer = RNSAddObserverWithBlock(center, selector, name, object, queue, block);
+  if (center != NSNotificationCenter.defaultCenter || queue != NSOperationQueue.mainQueue || block == nil ||
+      ![name isEqualToString:NSTextStorageDidProcessEditingNotification] ||
+      ![object isKindOfClass:NSTextStorage.class]) {
+    return observer;
+  }
+  void *invoke = RNSBlockInvoke(block);
+  // Only the main thread creates search controllers, and only it reads the learning flag.
+  if (NSThread.isMainThread && RNSLearningSearchFieldObserver && RNSSearchFieldObserverInvoke.load() == nullptr &&
+      RNSIsUIKitFunction(invoke)) {
+    RNSSearchFieldObserverInvoke.store(invoke);
+  }
+  if (invoke == RNSSearchFieldObserverInvoke.load()) {
+    auto *remover = [[RNSSearchFieldObserverRemover alloc] initWithObserver:observer];
+    objc_setAssociatedObject(object, (__bridge const void *)remover, remover, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+  return observer;
+}
+
+#endif // !TARGET_OS_TV
+
 @implementation RNSSearchBar {
   UISearchController *_controller;
   UIColor *_textColor;
@@ -25,6 +116,20 @@ namespace react = facebook::react;
 }
 
 @synthesize controller = _controller;
+
+#if !TARGET_OS_TV
++ (void)initialize
+{
+  if (self != RNSSearchBar.class) {
+    return;
+  }
+  Method method =
+      class_getInstanceMethod(NSNotificationCenter.class, @selector(addObserverForName:object:queue:usingBlock:));
+  // Store the original first: other threads call the replacement as soon as it is installed.
+  RNSAddObserverWithBlock = (decltype(RNSAddObserverWithBlock))method_getImplementation(method);
+  method_setImplementation(method, (IMP)RNSAddObserverRemovedWithSearchField);
+}
+#endif // !TARGET_OS_TV
 
 - (instancetype)init
 {
@@ -39,7 +144,10 @@ namespace react = facebook::react;
 - (void)initCommonProps
 {
 #if !TARGET_OS_TV
+  // The controller's search field registers UIKit's observer while it is created.
+  RNSLearningSearchFieldObserver = RNSSearchFieldObserverInvoke.load() == nullptr;
   _controller = [[UISearchController alloc] initWithSearchResultsController:nil];
+  RNSLearningSearchFieldObserver = NO;
 #else
   // on TVOS UISearchController must contain searchResultsController.
   _controller = [[UISearchController alloc] initWithSearchResultsController:[UIViewController new]];
