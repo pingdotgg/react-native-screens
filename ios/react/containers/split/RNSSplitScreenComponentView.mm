@@ -95,6 +95,11 @@ namespace react = facebook::react;
 
 - (void)setStackHost:(nullable RNSStackHostComponentView *)stackHost
 {
+  UIView *previousStackView = _stackHost.stackNavigationController.viewIfLoaded;
+  if (previousStackView != nil) {
+    [self updateTouchHandlerOfView:previousStackView attached:NO];
+  }
+
   _stackHost = stackHost;
   // A column keeps its place in the Split while its stack has no attached screens.
   _stackHost.stackNavigationController.allowsEmptyStack = YES;
@@ -137,6 +142,7 @@ namespace react = facebook::react;
 
 - (void)splitColumnWillAppear:(RNSSplitColumnCoordinator *)coordinator
 {
+  [self updateTouchHandlerOfHostedStackShown:YES];
   [_reactEventEmitter emitOnWillAppear];
 }
 
@@ -152,6 +158,7 @@ namespace react = facebook::react;
 
 - (void)splitColumnDidDisappear:(RNSSplitColumnCoordinator *)coordinator
 {
+  [self updateTouchHandlerOfHostedStackShown:NO];
   [_reactEventEmitter emitOnDidDisappear];
 }
 
@@ -170,7 +177,25 @@ namespace react = facebook::react;
       return;
     }
 
-    [self updateTouchHandlerOfView:_columnCoordinator.plainColumnContentView inWindow:window];
+    [self updateTouchHandlerOfView:_columnCoordinator.plainColumnContentView attached:window != nil];
+  }
+}
+
+/**
+ * @brief Handles touches in the stack an inspector hosts while the inspector is shown as a modal.
+ *
+ * The stack is then outside the RN hierarchy, like the content of a plain inspector. The handler is attached to the
+ * view of the navigation controller of the stack, so that it covers the screens and the items of the navigation bar.
+ */
+- (void)updateTouchHandlerOfHostedStackShown:(BOOL)shown
+{
+  if (@available(iOS 26.0, *)) {
+    if (_stackHost == nil || _columnType != RNSSplitScreenColumnTypeInspector) {
+      return;
+    }
+
+    BOOL isOutsideSplitHost = ![_columnCoordinator isInSplitHostSubtree];
+    [self updateTouchHandlerOfView:_stackHost.stackNavigationController.view attached:shown && isOutsideSplitHost];
   }
 }
 
@@ -180,9 +205,9 @@ namespace react = facebook::react;
  * Like a presented screen, the column can move between windows without passing through nil, and the handler asserts
  * on attaching twice or detaching from a view it is not attached to.
  */
-- (void)updateTouchHandlerOfView:(UIView *)view inWindow:(nullable UIWindow *)window
+- (void)updateTouchHandlerOfView:(UIView *)view attached:(BOOL)attached
 {
-  if (window != nil) {
+  if (attached) {
     if (_touchHandler == nil) {
       _touchHandler = [RCTSurfaceTouchHandler new];
     }

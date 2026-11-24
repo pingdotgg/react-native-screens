@@ -88,6 +88,25 @@ export interface SplitInspectorProps extends ViewProps {
    */
   children?: React.ReactNode | undefined;
   /**
+   * Keeps the inspector a plain column even when its content is a
+   * `Stack.Host`.
+   *
+   * @remarks
+   * Like in {@link SplitColumnProps.disableStackIntegration | Split.Column},
+   * a `Stack.Host` rendered as a direct child of the inspector is integrated
+   * with it by default: the stack navigates the inspector, and the header of
+   * the stack is the navigation bar of the inspector. The host has to be the
+   * only child of the inspector then.
+   *
+   * The value is read when the inspector is mounted. Changing it later has no
+   * effect.
+   *
+   * @defaultValue `false`
+   *
+   * @platform ios >= 26
+   */
+  disableStackIntegration?: boolean | undefined;
+  /**
    * A callback that gets invoked when the current `Split.Inspector` did appear.
    *
    * @remarks

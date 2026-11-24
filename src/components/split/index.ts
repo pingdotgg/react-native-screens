@@ -76,6 +76,10 @@ export const Split = {
    * It is shown and hidden with
    * {@link SplitHostProps.showInspector | showInspector}.
    *
+   * A `Stack.Host` rendered as its direct and only child is integrated with
+   * the inspector, like with {@link Split.Column}. Opt out with
+   * {@link SplitInspectorProps.disableStackIntegration | disableStackIntegration}.
+   *
    * @platform ios >= 26
    * @experimental
    */

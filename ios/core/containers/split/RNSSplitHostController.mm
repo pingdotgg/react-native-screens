@@ -353,7 +353,11 @@
   if (@available(iOS 26.0, *)) {
     RNSSplitColumnCoordinator *inspector = inspectors.firstObject;
     if (inspector != nil) {
-      [self setViewController:inspector.plainColumnNavigationController forColumn:UISplitViewControllerColumnInspector];
+      // An inspector that hosts a stack is navigated by the navigation controller of that stack.
+      UINavigationController *navigationController = inspector.hostedStackNavigationController != nil
+          ? inspector.hostedStackNavigationController
+          : inspector.plainColumnNavigationController;
+      [self setViewController:navigationController forColumn:UISplitViewControllerColumnInspector];
     }
   }
 #endif
