@@ -44,6 +44,11 @@
   [[self findTabBarController] prewarmScreenController:self];
 }
 
+- (void)tabScreenContentDidBecomeReady
+{
+  [[self findTabBarController] screenControllerContentDidBecomeReady:self];
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
   [super viewWillAppear:animated];
@@ -174,6 +179,11 @@
 - (BOOL)isPreventNativeSelectionEnabled
 {
   return self.configProvider.preventNativeSelection;
+}
+
+- (BOOL)isContentReady
+{
+  return self.configProvider.contentReady;
 }
 
 @end

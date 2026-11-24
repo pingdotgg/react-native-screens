@@ -193,6 +193,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prewarmScreenController:(nonnull UIViewController *)controller;
 
 /**
+ * Removes the snapshot covering `controller` after a selection, once its content has rendered.
+ */
+- (void)screenControllerContentDidBecomeReady:(nonnull UIViewController *)controller;
+
+/**
  * Idempotent teardown. Releases observer references and any retained host references.
  * Called by the host on view lifecycle end.
  */

@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL shouldUseRepeatedTabSelectionScrollToTopSpecialEffect;
 
 @property (nonatomic, readonly) BOOL preventNativeSelection;
+@property (nonatomic, readonly) BOOL contentReady;
 
 @property (nonatomic, readonly) BOOL overrideScrollViewContentInsetAdjustmentBehavior;
 

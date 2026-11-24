@@ -97,6 +97,12 @@ static void rns_pushViewController(__unsafe_unretained id self,
   /// can land between `shouldSelectTab:` and `didSelectTab:`.
   BOOL _isApplyingProgrammaticTabSelection;
 
+  /// Snapshot of the previously selected screen, kept over a selected screen until it's ready.
+  UIView *_Nullable _selectionCover;
+  UIView *_Nullable _pendingSelectionCover;
+  __weak UIViewController *_Nullable _selectionCoverTarget;
+  NSUInteger _selectionCoverGeneration;
+
   /// UITab path only. Set in `tabBar:didSelectItem:` when the user selects the More tab while
   /// another tab is active. Tapping More does not necessarily show the More list - the stack may
   /// re-display a hosted screen retained from a previous visit - so the decision between emitting
@@ -344,6 +350,80 @@ static void rns_pushViewController(__unsafe_unretained id self,
   [self updateOrientationIfNeeded];
 }
 
+#pragma mark - Selection cover
+
+- (void)prepareSelectionCoverFor:(nonnull UIViewController *)nextViewController
+{
+  _pendingSelectionCover = nil;
+  if (![nextViewController isKindOfClass:RNSTabsScreenViewController.class] ||
+      static_cast<RNSTabsScreenViewController *>(nextViewController).isContentReady || self.view.window == nil) {
+    return;
+  }
+  // An existing cover already shows the last ready screen.
+  UIViewController *current = [self effectiveSelectedViewController];
+  if (_selectionCover == nil && current != nil && current != nextViewController && current.isViewLoaded &&
+      current.view.window != nil) {
+    _pendingSelectionCover = [current.view snapshotViewAfterScreenUpdates:NO];
+  }
+  _selectionCoverTarget = nextViewController;
+}
+
+- (void)installSelectionCoverOver:(nonnull UIViewController *)selectedViewController
+{
+  if (selectedViewController != _selectionCoverTarget) {
+    _pendingSelectionCover = nil;
+    [self removeSelectionCover];
+    return;
+  }
+  UIView *view = selectedViewController.view;
+  if (_pendingSelectionCover != nil && view.superview != nil) {
+    [_selectionCover removeFromSuperview];
+    _selectionCover = _pendingSelectionCover;
+    _selectionCover.frame = view.frame;
+    _selectionCover.userInteractionEnabled = YES;
+    [view.superview insertSubview:_selectionCover aboveSubview:view];
+  } else if (_selectionCover != nil && view.superview != nil) {
+    [view.superview insertSubview:_selectionCover aboveSubview:view];
+  }
+  _pendingSelectionCover = nil;
+  if (_selectionCover == nil) {
+    return;
+  }
+  NSUInteger generation = ++_selectionCoverGeneration;
+  __weak RNSTabBarController *weakSelf = self;
+  // A screen that never reports ready must not stay hidden.
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    RNSTabBarController *strongSelf = weakSelf;
+    if (strongSelf != nil && strongSelf->_selectionCoverGeneration == generation) {
+      [strongSelf removeSelectionCover];
+    }
+  });
+}
+
+- (void)screenControllerContentDidBecomeReady:(UIViewController *)controller
+{
+  if (_selectionCover == nil || controller != _selectionCoverTarget) {
+    return;
+  }
+  NSUInteger generation = _selectionCoverGeneration;
+  __weak RNSTabBarController *weakSelf = self;
+  // After the mounting transaction that made it ready has been laid out.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RNSTabBarController *strongSelf = weakSelf;
+    if (strongSelf != nil && strongSelf->_selectionCoverGeneration == generation) {
+      [strongSelf removeSelectionCover];
+    }
+  });
+}
+
+- (void)removeSelectionCover
+{
+  _selectionCoverGeneration += 1;
+  [_selectionCover removeFromSuperview];
+  _selectionCover = nil;
+  _selectionCoverTarget = nil;
+}
+
 #pragma mark - Prewarming
 
 - (void)prewarmScreenController:(UIViewController *)controller
@@ -560,6 +640,7 @@ static void rns_pushViewController(__unsafe_unretained id self,
     }
   }
 
+  [self prepareSelectionCoverFor:viewController];
   _isHandlingExplicitSelectionUpdate = YES;
   return YES;
 }
@@ -575,6 +656,7 @@ static void rns_pushViewController(__unsafe_unretained id self,
             @"[RNScreens] Unexpected type of controller: %@",
             viewController.class);
 
+  [self installSelectionCoverOver:viewController];
   [self userDidSelectViewController:viewController];
   _isHandlingExplicitSelectionUpdate = NO;
 }
@@ -675,6 +757,13 @@ static void rns_pushViewController(__unsafe_unretained id self,
 }
 
 - (void)applySelectedScreenController:(nonnull UIViewController *)screenController
+{
+  [self prepareSelectionCoverFor:screenController];
+  [self applySelectedScreenControllerUncovered:screenController];
+  [self installSelectionCoverOver:[self effectiveSelectedViewController] ?: screenController];
+}
+
+- (void)applySelectedScreenControllerUncovered:(nonnull UIViewController *)screenController
 {
 #if RNS_UITAB_API_SDK_AVAILABLE
   if (RNS_UITAB_API_ENABLED) {

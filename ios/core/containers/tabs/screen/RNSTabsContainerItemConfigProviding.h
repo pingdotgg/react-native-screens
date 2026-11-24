@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) RNSOrientation orientation;
 @property (nonatomic, readonly) BOOL preventNativeSelection;
+
+/**
+ * Whether the screen has rendered what it shows when selected. While NO, selecting the screen keeps a snapshot of the
+ * previously selected screen over it.
+ */
+@property (nonatomic, readonly) BOOL contentReady;
 @property (nonatomic, readonly) BOOL shouldUseRepeatedTabSelectionPopToRootSpecialEffect;
 @property (nonatomic, readonly) BOOL shouldUseRepeatedTabSelectionScrollToTopSpecialEffect;
 @property (nonatomic, readonly) UIUserInterfaceStyle userInterfaceStyle;

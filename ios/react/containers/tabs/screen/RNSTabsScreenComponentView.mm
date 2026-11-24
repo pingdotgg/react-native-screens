@@ -80,6 +80,7 @@ namespace react = facebook::react;
 
   _shouldUseRepeatedTabSelectionPopToRootSpecialEffect = YES;
   _shouldUseRepeatedTabSelectionScrollToTopSpecialEffect = YES;
+  _contentReady = YES;
 
   _overrideScrollViewContentInsetAdjustmentBehavior = YES;
   _isOverrideScrollViewContentInsetAdjustmentBehaviorSet = NO;
@@ -345,6 +346,13 @@ RNS_IGNORE_SUPER_CALL_END
 
   if (newComponentProps.preventNativeSelection != oldComponentProps.preventNativeSelection) {
     _preventNativeSelection = newComponentProps.preventNativeSelection;
+  }
+
+  if (newComponentProps.contentReady != oldComponentProps.contentReady) {
+    _contentReady = newComponentProps.contentReady;
+    if (_contentReady) {
+      [_controller tabScreenContentDidBecomeReady];
+    }
   }
 
   if (newComponentProps.prewarmRequest > 0 && newComponentProps.prewarmRequest != oldComponentProps.prewarmRequest) {

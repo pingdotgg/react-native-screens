@@ -56,6 +56,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tabScreenPrewarmRequested;
 
 /**
+ * Tell the controller that the tab screen it owns has rendered its content, so a selection cover over it can go.
+ */
+- (void)tabScreenContentDidBecomeReady;
+
+/**
  * Tell the controller that the tab item related to this controller has been selected again after being presented.
  * Returns boolean indicating whether the action has been handled.
  */
@@ -80,6 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)getScreenKeyOrNull;
 
 - (BOOL)isPreventNativeSelectionEnabled;
+
+- (BOOL)isContentReady;
 
 @end
 
