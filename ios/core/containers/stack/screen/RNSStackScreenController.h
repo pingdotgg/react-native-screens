@@ -17,6 +17,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) id<RNSStackScreenControllerDelegate> delegate;
 @property (nonatomic, weak, nullable) id<RNSStackContainerItemConfigProviding> configProvider;
 
+/**
+ * Whether the screen currently refuses to be removed natively. See `RNSStackContainerItemConfigProviding`.
+ */
+@property (nonatomic, readonly) BOOL preventsNativeDismiss;
+
+/**
+ * Tells the delegate that a native pop removing this screen was refused.
+ */
+- (void)notifyNativeDismissPrevented;
+
 @end
 
 /**
@@ -36,6 +46,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)stackScreenControllerDidLeaveStack:(RNSStackScreenController *)controller;
 
+@optional
+
+/**
+ * Called when the navigation controller refused a native pop (back button, back gesture, back menu) that would have
+ * removed this screen, because the screen prevents native dismissal.
+ */
+- (void)stackScreenControllerDidPreventNativeDismiss:(RNSStackScreenController *)controller;
+
 @end
 
 /**
@@ -49,6 +67,13 @@ NS_ASSUME_NONNULL_BEGIN
  * Content scroll view registered within the screen, or nil if none has been registered.
  */
 - (nullable UIScrollView *)cachedContentScrollView;
+
+@optional
+
+/**
+ * Whether UIKit may not remove the screen natively (back button, back gesture, back menu) while it is attached.
+ */
+@property (nonatomic, readonly) BOOL preventsNativeDismiss;
 
 @end
 

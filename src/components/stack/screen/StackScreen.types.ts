@@ -135,7 +135,7 @@ export type StackScreenProps = {
    * {@link StackScreenProps.preventNativeDismiss | preventNativeDismiss} stops
    * it.
    *
-   * @platform android
+   * @platform android, ios
    */
   onNativeDismissPrevented?: NativeEventHandler<EmptyEventPayload> | undefined;
 
@@ -144,8 +144,13 @@ export type StackScreenProps = {
    * Prevents the user from dismissing the screen natively with the header
    * back button or the system back.
    *
+   * @remarks
+   * On iOS this covers the back button, its history menu and the back
+   * gestures, also when the screen is shown by a stack nested in a screen
+   * that is being popped.
+   *
    * @defaultValue `false`
-   * @platform android
+   * @platform android, ios
    */
   preventNativeDismiss?: boolean | undefined;
   /**

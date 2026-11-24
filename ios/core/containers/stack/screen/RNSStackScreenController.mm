@@ -40,6 +40,22 @@
                                                             heuristicRoot:self.view];
 }
 
+#pragma mark - Native dismissal
+
+- (BOOL)preventsNativeDismiss
+{
+  id<RNSStackContainerItemConfigProviding> configProvider = _configProvider;
+  return [configProvider respondsToSelector:@selector(preventsNativeDismiss)] && configProvider.preventsNativeDismiss;
+}
+
+- (void)notifyNativeDismissPrevented
+{
+  id<RNSStackScreenControllerDelegate> delegate = _delegate;
+  if ([delegate respondsToSelector:@selector(stackScreenControllerDidPreventNativeDismiss:)]) {
+    [delegate stackScreenControllerDidPreventNativeDismiss:self];
+  }
+}
+
 #pragma mark - Lifecycle Events
 
 - (void)viewWillAppear:(BOOL)animated

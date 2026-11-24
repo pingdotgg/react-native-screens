@@ -39,6 +39,8 @@ namespace react = facebook::react;
   // resolving the content scroll view for special effects.
   __weak UIScrollView *_Nullable _contentScrollView;
 
+  BOOL _preventNativeDismiss;
+
   // Flags
   BOOL _hasUpdatedActivityMode;
   BOOL _reportsFrameToShadowTree;
@@ -101,6 +103,7 @@ namespace react = facebook::react;
   // container state
   _screenKey = nil;
   _activityMode = RNSStackScreenActivityModeDetached;
+  _preventNativeDismiss = NO;
 }
 
 - (void)setupController
@@ -136,6 +139,13 @@ namespace react = facebook::react;
 - (nullable UIScrollView *)cachedContentScrollView
 {
   return _contentScrollView;
+}
+
+#pragma mark - RNSStackContainerItemConfigProviding
+
+- (BOOL)preventsNativeDismiss
+{
+  return _activityMode == RNSStackScreenActivityModeAttached && _preventNativeDismiss;
 }
 
 #pragma mark - Events
@@ -177,6 +187,11 @@ namespace react = facebook::react;
     _isNativelyDismissed = YES;
     [self.reactEventEmitter emitOnNativeDismiss];
   }
+}
+
+- (void)stackScreenControllerDidPreventNativeDismiss:(RNSStackScreenController *)controller
+{
+  [self.reactEventEmitter emitOnNativeDismissPrevented];
 }
 
 #pragma mark - RNSSafeAreaProviding
@@ -229,6 +244,8 @@ RNS_IGNORE_SUPER_CALL_END
         newComponentProps.activityMode);
     _hasUpdatedActivityMode = YES;
   }
+
+  _preventNativeDismiss = newComponentProps.preventNativeDismiss;
 
   if (oldComponentProps.screenKey != newComponentProps.screenKey) {
     RCTAssert(_screenKey == nil, @"[RNScreens] ScreenController cannot change its screenKey");

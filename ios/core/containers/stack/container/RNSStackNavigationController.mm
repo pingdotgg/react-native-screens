@@ -1,6 +1,8 @@
 #import "RNSStackNavigationController.h"
 #import "RNSAssert.h"
 #import "RNSContainer.h"
+#import "RNSContainerItem.h"
+#import "RNSDefines.h"
 #import "RNSLog.h"
 #import "RNSParentContainerItemRegistry.h"
 #import "RNSStackNavigationBar.h"
@@ -10,12 +12,61 @@
 #import "RNSViewControllerViewLifecycleEventsObserver.h"
 #import "RNSViewFrameChangeDelegate.h"
 
+@interface RNSStackNavigationController ()
+- (BOOL)shouldPreventNativePopToController:(UIViewController *)controller;
+@end
+
+#if !TARGET_OS_TV
+/**
+ * Wraps UIKit's own delegate of a back gesture recognizer: refuses the gesture when the pop it would start is
+ * prevented, and forwards everything else to the original delegate.
+ */
+@interface RNSStackPopGestureDelegate : NSObject <UIGestureRecognizerDelegate>
+@property (nonatomic, weak) RNSStackNavigationController *navigationController;
+@property (nonatomic, weak) id<UIGestureRecognizerDelegate> originalDelegate;
+@end
+
+@implementation RNSStackPopGestureDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+  RNSStackNavigationController *navigation = self.navigationController;
+  if (navigation.viewControllers.count < 2) {
+    return NO;
+  }
+  UIViewController *destination = navigation.viewControllers[navigation.viewControllers.count - 2];
+  if ([navigation shouldPreventNativePopToController:destination]) {
+    return NO;
+  }
+  if ([self.originalDelegate respondsToSelector:_cmd]) {
+    return [self.originalDelegate gestureRecognizerShouldBegin:gestureRecognizer];
+  }
+  return YES;
+}
+
+- (BOOL)respondsToSelector:(SEL)selector
+{
+  return [super respondsToSelector:selector] || [self.originalDelegate respondsToSelector:selector];
+}
+
+- (id)forwardingTargetForSelector:(SEL)selector
+{
+  return self.originalDelegate;
+}
+
+@end
+#endif // !TARGET_OS_TV
+
 @implementation RNSStackNavigationController {
   NSMutableArray<RNSPushOperation *> *_Nonnull _pendingPushOperations;
   NSMutableArray<RNSPopOperation *> *_Nonnull _pendingPopOperations;
   RNSParentContainerItemRegistry *_Nonnull _parentContainerRegistry;
+  // Pops requested by React are never prevented, only the ones UIKit starts.
+  BOOL _performingReactUpdate;
 #if !TARGET_OS_TV
   NSMutableDictionary<NSString *, UIBarButtonItem *> *_Nullable _toolbarIconButtons;
+  RNSStackPopGestureDelegate *_Nullable _edgePopGestureDelegate;
+  RNSStackPopGestureDelegate *_Nullable _contentPopGestureDelegate;
 #endif // !TARGET_OS_TV
 }
 
@@ -32,6 +83,25 @@
     [self initState];
   }
   return self;
+}
+
+- (void)viewDidLoad
+{
+  [super viewDidLoad];
+#if !TARGET_OS_TV
+  _edgePopGestureDelegate = [RNSStackPopGestureDelegate new];
+  _edgePopGestureDelegate.navigationController = self;
+  _edgePopGestureDelegate.originalDelegate = self.interactivePopGestureRecognizer.delegate;
+  self.interactivePopGestureRecognizer.delegate = _edgePopGestureDelegate;
+#if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (@available(iOS 26.0, *)) {
+    _contentPopGestureDelegate = [RNSStackPopGestureDelegate new];
+    _contentPopGestureDelegate.navigationController = self;
+    _contentPopGestureDelegate.originalDelegate = self.interactiveContentPopGestureRecognizer.delegate;
+    self.interactiveContentPopGestureRecognizer.delegate = _contentPopGestureDelegate;
+  }
+#endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+#endif // !TARGET_OS_TV
 }
 
 - (void)initState
@@ -56,6 +126,52 @@
 }
 #endif // !TARGET_OS_TV
 
+#pragma mark - Native dismissal prevention
+
+/**
+ * The screen that prevents its native dismissal in `controller`, or in the stack nested in it: a parent screen can be
+ * popped while its nested stack shows the guarded screen.
+ */
+- (nullable RNSStackScreenController *)preventingScreenInController:(nullable UIViewController *)controller
+{
+  if ([controller isKindOfClass:RNSStackScreenController.class]) {
+    auto *screenController = static_cast<RNSStackScreenController *>(controller);
+    if (screenController.preventsNativeDismiss) {
+      return screenController;
+    }
+  }
+  if ([controller conformsToProtocol:@protocol(RNSContainerItem)]) {
+    id<RNSContainer> nested = [(id<RNSContainerItem>)controller resolveNestedContainer];
+    if ([nested isKindOfClass:UINavigationController.class]) {
+      return [self preventingScreenInController:static_cast<UINavigationController *>(nested).topViewController];
+    }
+  }
+  return nil;
+}
+
+/**
+ * Whether a native pop to `controller` is refused, because one of the screens it would remove prevents its native
+ * dismissal. That screen is notified.
+ */
+- (BOOL)shouldPreventNativePopToController:(UIViewController *)controller
+{
+  if (_performingReactUpdate) {
+    return NO;
+  }
+  NSUInteger destinationIndex = [self.viewControllers indexOfObject:controller];
+  if (destinationIndex == NSNotFound) {
+    return NO;
+  }
+  for (NSUInteger index = self.viewControllers.count; index > destinationIndex + 1; index--) {
+    RNSStackScreenController *screenController = [self preventingScreenInController:self.viewControllers[index - 1]];
+    if (screenController != nil) {
+      [screenController notifyNativeDismissPrevented];
+      return YES;
+    }
+  }
+  return NO;
+}
+
 #pragma mark - Navigation
 
 /**
@@ -79,19 +195,29 @@
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated
 {
   if (self.viewControllers.count > 1) {
-    [self prepareToolbarForController:self.viewControllers[self.viewControllers.count - 2]];
+    UIViewController *destination = self.viewControllers[self.viewControllers.count - 2];
+    if ([self shouldPreventNativePopToController:destination]) {
+      return nil;
+    }
+    [self prepareToolbarForController:destination];
   }
   return [super popViewControllerAnimated:animated];
 }
 
 - (NSArray<UIViewController *> *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
+  if ([self shouldPreventNativePopToController:viewController]) {
+    return nil;
+  }
   [self prepareToolbarForController:viewController];
   return [super popToViewController:viewController animated:animated];
 }
 
 - (NSArray<UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated
 {
+  if ([self shouldPreventNativePopToController:self.viewControllers.firstObject]) {
+    return nil;
+  }
   [self prepareToolbarForController:self.viewControllers.firstObject];
   return [super popToRootViewControllerAnimated:animated];
 }
@@ -202,6 +328,7 @@
     return;
   }
 
+  _performingReactUpdate = YES;
   for ([[maybe_unused]] RNSPopOperation *op in _pendingPopOperations) {
     RNSAssert([self.viewControllers count] > 1, @"[RNScreens] Attempt to pop last screen from the stack");
     RNSAssert(self.topViewController == static_cast<UIViewController *>(op.screenController),
@@ -214,6 +341,7 @@
   }
 
   RNSAssert([self.viewControllers count] > 0, @"[RNScreens] Stack should never be empty after updates");
+  _performingReactUpdate = NO;
 
   [self dumpStackModel];
 
