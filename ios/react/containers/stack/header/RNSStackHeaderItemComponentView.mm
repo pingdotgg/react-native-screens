@@ -57,6 +57,7 @@ namespace react = facebook::react;
   _disabled = NO;
   _respondsToOnPress = NO;
   _hidesSharedBackground = NO;
+  _searchBarPlacement = NO;
   _axisBehavior = RNSHeaderItemAxisBehaviorAutomatic;
   _visibilityPriority = RNSHeaderItemVisibilityPriorityStandard;
 }
@@ -271,6 +272,11 @@ RNS_IGNORE_SUPER_CALL_END
 
   if (oldItemProps.hidesSharedBackground != newItemProps.hidesSharedBackground) {
     _hidesSharedBackground = newItemProps.hidesSharedBackground;
+    needsUpdate = YES;
+  }
+
+  if (oldItemProps.searchBarPlacement != newItemProps.searchBarPlacement) {
+    _searchBarPlacement = newItemProps.searchBarPlacement;
     needsUpdate = YES;
   }
 

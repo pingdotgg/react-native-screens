@@ -279,6 +279,20 @@ export interface StackHeaderInlineItemIOS
    */
   type: 'item';
   /**
+   * Shows UIKit's search placement item, which presents the header's
+   * {@link StackHeaderConfigPropsIOS.searchBar | searchBar}, in place of this
+   * item.
+   *
+   * @remarks
+   * Lets the search field take a position among the other items, e.g. in the
+   * toolbar. The item's title, icon and press handler are not used then.
+   * Before iOS 26 the item is built from its own props.
+   *
+   * @defaultValue `false`
+   * @platform ios >= 26
+   */
+  searchBarPlacement?: boolean | undefined;
+  /**
    * Visual variant (style) of the item.
    *
    * @defaultValue `'plain'`

@@ -81,6 +81,8 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
   }
 
   RNSStackScreenController *controller = [self requireScreenController];
+  // UIKit requires the search controller before its placement item is created.
+  [self applyConfigPropertiesForController:controller];
 
   [_leadingBarButtonItems removeAllObjects];
   [_trailingBarButtonItems removeAllObjects];
@@ -785,10 +787,20 @@ static UIBarButtonItemAxisBehavior RNSBarButtonItemAxisBehaviorFromAxisBehavior(
 
 - (UIBarButtonItem *)buildBarButtonItemForItem:(id<RNSStackHeaderItemDataProviding>)item
 {
-  UIBarButtonItem *barButtonItem = [RNSStackHeaderContentFactory barButtonItemForHeaderItem:item
-                                                                    withFrameChangeDelegate:_frameChangeDelegate
-                                                                   withHeaderEventsDelegate:_eventsDelegate
-                                                                            withImageLoader:_imageLoader];
+  UIBarButtonItem *barButtonItem = nil;
+#if !TARGET_OS_TV && RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (@available(iOS 26.0, *)) {
+    if (item.searchBarPlacement) {
+      barButtonItem = [self requireScreenController].navigationItem.searchBarPlacementBarButtonItem;
+    }
+  }
+#endif // !TARGET_OS_TV && RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+  if (barButtonItem == nil) {
+    barButtonItem = [RNSStackHeaderContentFactory barButtonItemForHeaderItem:item
+                                                     withFrameChangeDelegate:_frameChangeDelegate
+                                                    withHeaderEventsDelegate:_eventsDelegate
+                                                             withImageLoader:_imageLoader];
+  }
 
 #if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
   if (@available(iOS 26.0, *)) {

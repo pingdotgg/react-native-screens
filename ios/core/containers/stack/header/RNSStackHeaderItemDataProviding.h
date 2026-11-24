@@ -30,6 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL disabled;
 @property (nonatomic, readonly) BOOL respondsToOnPress;
 @property (nonatomic, readonly) BOOL hidesSharedBackground;
+/**
+ Whether the item is UIKit's search placement bar button item (iOS 26+), which shows the header's search bar.
+ */
+@property (nonatomic, readonly) BOOL searchBarPlacement;
 @property (nonatomic, readonly) RNSHeaderItemAxisBehavior axisBehavior;
 @property (nonatomic, readonly) RNSHeaderItemVisibilityPriority visibilityPriority;
 
