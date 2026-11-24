@@ -20,7 +20,7 @@ import kotlin.properties.Delegates
 class SheetDialogManager(
     context: Context,
     private val contentView: View,
-    activityProvider: () -> Activity? = { context.findActivity() },
+    private val activityProvider: () -> Activity? = { context.findActivity() },
 ) {
     private var sheetConfig = SheetConfig()
 
@@ -75,7 +75,7 @@ class SheetDialogManager(
         }
 
     private fun createPresentation(): SheetPresentation =
-        SheetPresentation(themedContext, container, presentationCallbacks).also {
+        SheetPresentation(themedContext, container, presentationCallbacks, activityProvider).also {
             it.applyInitialConfig(sheetConfig, lastContentHeight)
         }
 

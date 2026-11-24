@@ -1,5 +1,6 @@
 package com.swmansion.rnscreens.core.modals.sheet.presentation
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ internal class SheetPresentation(
     themedContext: Context,
     private val container: SheetContainer,
     private val callbacks: Callbacks,
+    activityProvider: () -> Activity?,
 ) {
     internal interface Callbacks {
         fun onDetentChanged(index: Int)
@@ -29,7 +31,7 @@ internal class SheetPresentation(
     }
 
     internal val dialog =
-        SheetDialog(themedContext).apply {
+        SheetDialog(themedContext, activityProvider).apply {
             setContentView(container)
             // Backdrop taps are handled by Material's `touch_outside` view, which calls `cancel()`,
             // intercepted by SheetDialog.cancelRequestInterceptor, that's responsible for
