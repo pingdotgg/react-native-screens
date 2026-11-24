@@ -460,6 +460,33 @@ export interface SplitHostProps extends ViewProps {
    */
   preferredSplitBehavior?: SplitBehavior | undefined;
   /**
+   * Overrides {@link SplitHostProps.preferredDisplayMode | preferredDisplayMode}
+   * while the Split is taller than it is wide.
+   *
+   * @remarks
+   * The Split picks between the two values natively as a rotation starts, so
+   * the column change animates with the rotation instead of after JS learns
+   * the new size. `'automatic'` keeps `preferredDisplayMode`.
+   *
+   * @defaultValue `'automatic'`
+   * @platform ios
+   */
+  portraitPreferredDisplayMode?: SplitDisplayMode | undefined;
+  /**
+   * Overrides
+   * {@link SplitHostProps.preferredSplitBehavior | preferredSplitBehavior}
+   * while the Split is taller than it is wide.
+   *
+   * @remarks
+   * See
+   * {@link SplitHostProps.portraitPreferredDisplayMode | portraitPreferredDisplayMode}.
+   * `'automatic'` keeps `preferredSplitBehavior`.
+   *
+   * @defaultValue `'automatic'`
+   * @platform ios
+   */
+  portraitPreferredSplitBehavior?: SplitBehavior | undefined;
+  /**
    * Specifies the background style of the primary view controller.
    *
    * @remarks

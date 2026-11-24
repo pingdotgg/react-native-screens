@@ -51,6 +51,16 @@
   return self;
 }
 
+#pragma mark - UIViewController
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+  // Before super, so that UIKit lays the columns out for the new size with the configuration for that size.
+  [_splitAppearanceApplicator applyOrientationAppearanceFor:self.appearanceProvider withController:self toSize:size];
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+}
+
 #pragma mark - Signals
 
 - (void)setNeedsUpdateOfChildViewControllers

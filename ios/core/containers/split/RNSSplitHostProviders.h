@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (UISplitViewControllerSplitBehavior)preferredSplitBehavior;
 - (UISplitViewControllerPrimaryEdge)primaryEdge;
 - (UISplitViewControllerDisplayMode)preferredDisplayMode;
+/** `Automatic` keeps `preferredSplitBehavior` while the Split is taller than it is wide. */
+- (UISplitViewControllerSplitBehavior)portraitPreferredSplitBehavior;
+/** `Automatic` keeps `preferredDisplayMode` while the Split is taller than it is wide. */
+- (UISplitViewControllerDisplayMode)portraitPreferredDisplayMode;
 - (UISplitViewControllerDisplayModeButtonVisibility)displayModeButtonVisibility;
 #if !TARGET_OS_TV
 - (UISplitViewControllerBackgroundStyle)primaryBackgroundStyle;

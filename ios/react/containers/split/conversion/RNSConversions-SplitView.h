@@ -23,6 +23,12 @@ UISplitViewControllerPrimaryEdge SplitViewPrimaryEdgeFromHostProp(
 UISplitViewControllerDisplayMode SplitViewPreferredDisplayModeFromHostProp(
     react::RNSSplitHostPreferredDisplayMode displayMode);
 
+UISplitViewControllerSplitBehavior SplitViewPreferredSplitBehaviorFromHostProp(
+    react::RNSSplitHostPortraitPreferredSplitBehavior behavior);
+
+UISplitViewControllerDisplayMode SplitViewPreferredDisplayModeFromHostProp(
+    react::RNSSplitHostPortraitPreferredDisplayMode displayMode);
+
 #if !TARGET_OS_TV
 UISplitViewControllerBackgroundStyle
 SplitViewPrimaryBackgroundStyleFromHostProp(

@@ -6,6 +6,49 @@
 
 @implementation RNSSplitAppearanceApplicator
 
+static BOOL RNSSplitSizeIsPortrait(CGSize size)
+{
+  return size.height > size.width;
+}
+
+static UISplitViewControllerSplitBehavior RNSSplitBehaviorForSize(id<RNSSplitHostAppearanceProvider> provider,
+                                                                  CGSize size)
+{
+  const auto portrait = provider.portraitPreferredSplitBehavior;
+  return RNSSplitSizeIsPortrait(size) && portrait != UISplitViewControllerSplitBehaviorAutomatic
+      ? portrait
+      : provider.preferredSplitBehavior;
+}
+
+static UISplitViewControllerDisplayMode RNSSplitDisplayModeForSize(id<RNSSplitHostAppearanceProvider> provider,
+                                                                   CGSize size)
+{
+  const auto portrait = provider.portraitPreferredDisplayMode;
+  return RNSSplitSizeIsPortrait(size) && portrait != UISplitViewControllerDisplayModeAutomatic
+      ? portrait
+      : provider.preferredDisplayMode;
+}
+
+- (void)applyOrientationAppearanceFor:(id<RNSSplitHostAppearanceProvider>)provider
+                       withController:(RNSSplitHostController *)splitHostController
+                               toSize:(CGSize)size
+{
+  if (provider == nil) {
+    return;
+  }
+
+  // UIKit lays the columns out for the new size inside the animation of the transition, so plain assignments here
+  // animate with it.
+  const auto splitBehavior = RNSSplitBehaviorForSize(provider, size);
+  if (splitHostController.preferredSplitBehavior != splitBehavior) {
+    splitHostController.preferredSplitBehavior = splitBehavior;
+  }
+  const auto displayMode = RNSSplitDisplayModeForSize(provider, size);
+  if (splitHostController.preferredDisplayMode != displayMode) {
+    splitHostController.preferredDisplayMode = displayMode;
+  }
+}
+
 - (void)updateAppearanceIfNeeded:(id<RNSSplitHostAppearanceProvider>)provider
              splitHostController:(RNSSplitHostController *)splitHostController
            appearanceCoordinator:(RNSSplitAppearanceCoordinator *)appearanceCoordinator
@@ -63,7 +106,8 @@
 {
   // Step 1 - general settings
   splitHostController.displayModeButtonVisibility = provider.displayModeButtonVisibility;
-  splitHostController.preferredSplitBehavior = provider.preferredSplitBehavior;
+  splitHostController.preferredSplitBehavior =
+      RNSSplitBehaviorForSize(provider, splitHostController.viewIfLoaded.bounds.size);
   splitHostController.overrideUserInterfaceStyle = provider.colorScheme;
 #if !TARGET_OS_TV
   splitHostController.primaryBackgroundStyle = provider.primaryBackgroundStyle;
@@ -164,7 +208,8 @@
 - (void)updateSplitViewDisplayModeFor:(id<RNSSplitHostAppearanceProvider>)provider
                        withController:(RNSSplitHostController *)splitHostController
 {
-  splitHostController.preferredDisplayMode = provider.preferredDisplayMode;
+  splitHostController.preferredDisplayMode =
+      RNSSplitDisplayModeForSize(provider, splitHostController.viewIfLoaded.bounds.size);
 }
 
 - (void)validateColumnConstraintsWithMinWidth:(CGFloat)minWidth maxWidth:(CGFloat)maxWidth

@@ -74,6 +74,14 @@ interface NativeProps extends ViewProps {
 
   preferredDisplayMode?: CT.WithDefault<SplitViewDisplayMode, 'automatic'>;
   preferredSplitBehavior?: CT.WithDefault<SplitViewSplitBehavior, 'automatic'>;
+  portraitPreferredDisplayMode?: CT.WithDefault<
+    SplitViewDisplayMode,
+    'automatic'
+  >;
+  portraitPreferredSplitBehavior?: CT.WithDefault<
+    SplitViewSplitBehavior,
+    'automatic'
+  >;
   primaryEdge?: CT.WithDefault<SplitViewPrimaryEdge, 'leading'>;
   showSecondaryToggleButton?: CT.WithDefault<boolean, false>;
   displayModeButtonVisibility?: CT.WithDefault<

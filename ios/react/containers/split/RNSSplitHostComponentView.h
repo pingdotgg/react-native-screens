@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UISplitViewControllerSplitBehavior preferredSplitBehavior;
 @property (nonatomic, readonly) UISplitViewControllerPrimaryEdge primaryEdge;
 @property (nonatomic, readonly) UISplitViewControllerDisplayMode preferredDisplayMode;
+@property (nonatomic, readonly) UISplitViewControllerSplitBehavior portraitPreferredSplitBehavior;
+@property (nonatomic, readonly) UISplitViewControllerDisplayMode portraitPreferredDisplayMode;
 @property (nonatomic, readonly) UISplitViewControllerDisplayModeButtonVisibility displayModeButtonVisibility;
 #if !TARGET_OS_TV
 @property (nonatomic, readonly) UISplitViewControllerBackgroundStyle primaryBackgroundStyle;

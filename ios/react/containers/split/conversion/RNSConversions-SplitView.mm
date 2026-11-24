@@ -62,6 +62,48 @@ UISplitViewControllerDisplayMode SplitViewPreferredDisplayModeFromHostProp(
   }
 }
 
+UISplitViewControllerSplitBehavior SplitViewPreferredSplitBehaviorFromHostProp(
+    facebook::react::RNSSplitHostPortraitPreferredSplitBehavior splitBehavior)
+{
+  using enum facebook::react::RNSSplitHostPortraitPreferredSplitBehavior;
+
+  switch (splitBehavior) {
+    case Displace:
+      return UISplitViewControllerSplitBehaviorDisplace;
+    case Overlay:
+      return UISplitViewControllerSplitBehaviorOverlay;
+    case Tile:
+      return UISplitViewControllerSplitBehaviorTile;
+    case Automatic:
+    default:
+      return UISplitViewControllerSplitBehaviorAutomatic;
+  }
+}
+
+UISplitViewControllerDisplayMode SplitViewPreferredDisplayModeFromHostProp(
+    facebook::react::RNSSplitHostPortraitPreferredDisplayMode displayMode)
+{
+  using enum facebook::react::RNSSplitHostPortraitPreferredDisplayMode;
+
+  switch (displayMode) {
+    case SecondaryOnly:
+      return UISplitViewControllerDisplayModeSecondaryOnly;
+    case OneBesideSecondary:
+      return UISplitViewControllerDisplayModeOneBesideSecondary;
+    case OneOverSecondary:
+      return UISplitViewControllerDisplayModeOneOverSecondary;
+    case TwoBesideSecondary:
+      return UISplitViewControllerDisplayModeTwoBesideSecondary;
+    case TwoOverSecondary:
+      return UISplitViewControllerDisplayModeTwoOverSecondary;
+    case TwoDisplaceSecondary:
+      return UISplitViewControllerDisplayModeTwoDisplaceSecondary;
+    case Automatic:
+    default:
+      return UISplitViewControllerDisplayModeAutomatic;
+  }
+}
+
 #if !TARGET_OS_TV
 UISplitViewControllerBackgroundStyle SplitViewPrimaryBackgroundStyleFromHostProp(
     facebook::react::RNSSplitHostPrimaryBackgroundStyle primaryBackgroundStyle)

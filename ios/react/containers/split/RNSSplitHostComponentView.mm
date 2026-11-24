@@ -71,6 +71,8 @@ static const CGFloat epsilon = 1e-6;
   _preferredSplitBehavior = UISplitViewControllerSplitBehaviorAutomatic;
   _primaryEdge = UISplitViewControllerPrimaryEdgeLeading;
   _preferredDisplayMode = UISplitViewControllerDisplayModeAutomatic;
+  _portraitPreferredSplitBehavior = UISplitViewControllerSplitBehaviorAutomatic;
+  _portraitPreferredDisplayMode = UISplitViewControllerDisplayModeAutomatic;
   _displayModeButtonVisibility = UISplitViewControllerDisplayModeButtonVisibilityAutomatic;
 #if !TARGET_OS_TV
   UISplitViewController *tempSplitVC = [[UISplitViewController alloc] init];
@@ -221,6 +223,19 @@ RNS_IGNORE_SUPER_CALL_END
     _needsSplitDisplayModeUpdate = true;
     _preferredDisplayMode =
         rnscreens::conversion::SplitViewPreferredDisplayModeFromHostProp(newComponentProps.preferredDisplayMode);
+  }
+
+  if (oldComponentProps.portraitPreferredSplitBehavior != newComponentProps.portraitPreferredSplitBehavior) {
+    _needsSplitAppearanceUpdate = true;
+    _portraitPreferredSplitBehavior = rnscreens::conversion::SplitViewPreferredSplitBehaviorFromHostProp(
+        newComponentProps.portraitPreferredSplitBehavior);
+  }
+
+  if (oldComponentProps.portraitPreferredDisplayMode != newComponentProps.portraitPreferredDisplayMode) {
+    _needsSplitAppearanceUpdate = true;
+    _needsSplitDisplayModeUpdate = true;
+    _portraitPreferredDisplayMode = rnscreens::conversion::SplitViewPreferredDisplayModeFromHostProp(
+        newComponentProps.portraitPreferredDisplayMode);
   }
 
   if (oldComponentProps.colorScheme != newComponentProps.colorScheme) {
