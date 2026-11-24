@@ -390,8 +390,9 @@ export type StackHeaderSpacerItemIOS =
 
 /**
  * Item that can be placed in
- * {@link StackHeaderConfigPropsIOS.leadingItems | leadingItems} and
- * {@link StackHeaderConfigPropsIOS.trailingItems | trailingItems}.
+ * {@link StackHeaderConfigPropsIOS.leadingItems | leadingItems},
+ * {@link StackHeaderConfigPropsIOS.trailingItems | trailingItems} and
+ * {@link StackHeaderConfigPropsIOS.toolbarItems | toolbarItems}.
  */
 export type StackHeaderItemIOS =
   | StackHeaderInlineItemIOS
@@ -869,6 +870,21 @@ export interface StackHeaderConfigPropsIOS {
    * @platform ios
    */
   trailingItems?: StackHeaderItemIOS[] | undefined;
+  /**
+   * A list of items displayed in the native bottom toolbar of this screen.
+   *
+   * @remarks
+   * Items are ordered from the leading edge. Use fixed or flexible spacers to
+   * position them. Omitting this prop or passing an empty array hides the
+   * toolbar. Navigating to another screen displays that screen's toolbar
+   * items. The toolbar is independent of the header's
+   * {@link StackHeaderConfigPropsBase.hidden | hidden} prop.
+   *
+   * Ignored on tvOS.
+   *
+   * @platform ios
+   */
+  toolbarItems?: StackHeaderItemIOS[] | undefined;
   /**
    * Large title text, displayed when `largeTitleEnabled = true`.
    *

@@ -10,6 +10,7 @@ import type { StackHeaderMenuIOS } from './StackHeaderMenu.ios.types';
 export type StackHeaderItemPlacement =
   | 'leading'
   | 'trailing'
+  | 'toolbar'
   | 'title'
   | 'subtitle'
   | 'largeSubtitle';

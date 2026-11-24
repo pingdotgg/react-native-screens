@@ -19,6 +19,8 @@ RNSHeaderItemPlacement RNSHeaderItemPlacementFromReactRNSStackHeaderItemIOSPlace
       return RNSHeaderItemPlacementLeading;
     case react::RNSStackHeaderItemIOSPlacement::Trailing:
       return RNSHeaderItemPlacementTrailing;
+    case react::RNSStackHeaderItemIOSPlacement::Toolbar:
+      return RNSHeaderItemPlacementToolbar;
     case react::RNSStackHeaderItemIOSPlacement::Title:
       return RNSHeaderItemPlacementTitle;
     case react::RNSStackHeaderItemIOSPlacement::Subtitle:
@@ -53,6 +55,8 @@ RNSHeaderItemSpacerPlacement RNSHeaderItemSpacerPlacementFromReactRNSStackHeader
       return RNSHeaderItemSpacerPlacementLeading;
     case react::RNSStackHeaderItemSpacerIOSPlacement::Trailing:
       return RNSHeaderItemSpacerPlacementTrailing;
+    case react::RNSStackHeaderItemSpacerIOSPlacement::Toolbar:
+      return RNSHeaderItemSpacerPlacementToolbar;
   }
 }
 

@@ -32,6 +32,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 
   NSMutableArray<UIBarButtonItem *> *_Nonnull _leadingBarButtonItems;
   NSMutableArray<UIBarButtonItem *> *_Nonnull _trailingBarButtonItems;
+  NSMutableArray<UIBarButtonItem *> *_Nonnull _toolbarBarButtonItems;
   NSMutableDictionary<NSString *, UIBarButtonItem *> *_Nonnull _barButtonItemsByItemId;
 }
 
@@ -42,6 +43,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
     _trackerRegistry = [RNSStackHeaderMenuTrackerRegistry new];
     _leadingBarButtonItems = [NSMutableArray new];
     _trailingBarButtonItems = [NSMutableArray new];
+    _toolbarBarButtonItems = [NSMutableArray new];
     _barButtonItemsByItemId = [NSMutableDictionary new];
   }
   return self;
@@ -77,6 +79,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 
   [_leadingBarButtonItems removeAllObjects];
   [_trailingBarButtonItems removeAllObjects];
+  [_toolbarBarButtonItems removeAllObjects];
   [_barButtonItemsByItemId removeAllObjects];
   [_trackerRegistry clear];
 
@@ -94,6 +97,11 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
           break;
         case RNSHeaderItemPlacementTrailing:
           [_trailingBarButtonItems addObject:[self buildBarButtonItemForItem:item]];
+          break;
+        case RNSHeaderItemPlacementToolbar:
+#if !TARGET_OS_TV
+          [_toolbarBarButtonItems addObject:[self buildBarButtonItemForItem:item]];
+#endif // !TARGET_OS_TV
           break;
         case RNSHeaderItemPlacementTitle:
           if (item.customView != nil) {
@@ -124,6 +132,11 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
         case RNSHeaderItemSpacerPlacementTrailing:
           [_trailingBarButtonItems addObject:barButtonItem];
           break;
+        case RNSHeaderItemSpacerPlacementToolbar:
+#if !TARGET_OS_TV
+          [_toolbarBarButtonItems addObject:barButtonItem];
+#endif // !TARGET_OS_TV
+          break;
       }
     }
   }
@@ -137,6 +150,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   [self applyTitleMenuForController:controller];
   [self updateNavigationBarVisibilityAnimated:YES];
 #if !TARGET_OS_TV
+  [self updateToolbarVisibilityAnimated:YES];
   [self updateBackButtonMenuEnabled];
 #endif // !TARGET_OS_TV
 }
@@ -150,11 +164,28 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   [self applyConfigPropertiesForController:[self requireScreenController]];
   [self updateNavigationBarVisibilityAnimated:YES];
 #if !TARGET_OS_TV
+  [self updateToolbarVisibilityAnimated:YES];
   [self updateBackButtonMenuEnabled];
 #endif // !TARGET_OS_TV
 }
 
 #if !TARGET_OS_TV
+- (void)applyToolbarItems
+{
+  [self applyToolbarItemsForController:[self requireScreenController]];
+}
+
+- (void)updateToolbarVisibilityAnimated:(BOOL)animated
+{
+  RNSStackNavigationController *navController = [self getNavigationController];
+  if (navController == nil || navController.topViewController != _screenController) {
+    return;
+  }
+
+  // Items belong to each screen. Only the visible screen may change the shared toolbar.
+  [navController setToolbarHidden:_screenController.toolbarItems.count == 0 animated:animated];
+}
+
 - (void)updateBackButtonMenuEnabled
 {
   RNSStackNavigationController *navController = [self getNavigationController];
@@ -214,6 +245,20 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
       }
 
       [controller.navigationItem setRightBarButtonItems:[_trailingBarButtonItems copy] animated:YES];
+      break;
+    }
+    case RNSHeaderItemPlacementToolbar: {
+#if !TARGET_OS_TV
+      UIBarButtonItem *newBarButtonItem = [self buildBarButtonItemForItem:targetItem];
+      NSUInteger index = oldBarButtonItem == nil ? NSNotFound : [_toolbarBarButtonItems indexOfObject:oldBarButtonItem];
+      if (index != NSNotFound) {
+        _toolbarBarButtonItems[index] = newBarButtonItem;
+      } else {
+        RNSLogW(@"[RNScreens] Item %@ not found for rebuild.", oldBarButtonItem);
+      }
+      [self applyToolbarItemsForController:controller];
+      [self updateToolbarVisibilityAnimated:YES];
+#endif // !TARGET_OS_TV
       break;
     }
     case RNSHeaderItemPlacementTitle:
@@ -320,6 +365,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 
   [_leadingBarButtonItems removeAllObjects];
   [_trailingBarButtonItems removeAllObjects];
+  [_toolbarBarButtonItems removeAllObjects];
   [_barButtonItemsByItemId removeAllObjects];
   [_trackerRegistry clear];
 
@@ -357,6 +403,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 #endif // Check for iOS >= 27 && !TARGET_OS_VISION && !TARGET_OS_TV
 
 #if !TARGET_OS_TV
+  [controller setToolbarItems:nil animated:NO];
   navItem.prompt = nil;
   navItem.hidesBackButton = NO;
   navItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
@@ -366,6 +413,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 
   [self updateNavigationBarVisibilityAnimated:YES];
 #if !TARGET_OS_TV
+  [self updateToolbarVisibilityAnimated:YES];
   [self updateBackButtonMenuEnabled];
 #endif // !TARGET_OS_TV
 }
@@ -568,6 +616,15 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
 }
 #endif // !TARGET_OS_TV
 
+#if !TARGET_OS_TV
+- (void)applyToolbarItemsForController:(RNSStackScreenController *)controller
+{
+  // The navigation controller already animates toolbar contents during a push/pop.
+  // Animating each Fabric rebuild again hides custom items until a second fade completes.
+  [controller setToolbarItems:[_toolbarBarButtonItems copy] animated:NO];
+}
+#endif // !TARGET_OS_TV
+
 - (void)applyItemsWithTitleView:(nullable UIView *)titleView
                    subtitleView:(nullable UIView *)subtitleView
               largeSubtitleView:(nullable UIView *)largeSubtitleView
@@ -576,6 +633,7 @@ static UIBarButtonItemVisibilityPriority RNSBarButtonItemVisibilityPriorityFromV
   UINavigationItem *navItem = controller.navigationItem;
 
 #if !TARGET_OS_TV
+  [self applyToolbarItemsForController:controller];
   navItem.leftItemsSupplementBackButton = YES;
 #endif // !TARGET_OS_TV
 

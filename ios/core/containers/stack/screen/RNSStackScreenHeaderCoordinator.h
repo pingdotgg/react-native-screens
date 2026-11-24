@@ -51,6 +51,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateNavigationBarVisibilityAnimated:(BOOL)animated;
 
 #if !TARGET_OS_TV
+/**
+ * Hands this screen's toolbar items to its view controller.
+ */
+- (void)applyToolbarItems;
+
+/**
+ * Shows the shared toolbar when the screen is on top and has toolbar items, hides it otherwise.
+ */
+- (void)updateToolbarVisibilityAnimated:(BOOL)animated;
+
 - (void)updateBackButtonMenuEnabled;
 
 - (void)clearAppliedBackButtonConfig;

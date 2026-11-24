@@ -48,6 +48,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
   const {
     leadingItems,
     trailingItems,
+    toolbarItems,
     titleItem,
     titleMenu,
     subtitleItem,
@@ -117,9 +118,12 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
         ...(trailingItems ?? [])
           .filter(it => it && it.type === 'item')
           .flatMap(it => [it.menu, it.menuRepresentation]),
+        ...(toolbarItems ?? [])
+          .filter(it => it && it.type === 'item')
+          .flatMap(it => [it.menu, it.menuRepresentation]),
         titleMenu,
       ].filter(it => !!it),
-    [leadingItems, trailingItems, titleMenu],
+    [leadingItems, trailingItems, toolbarItems, titleMenu],
   );
 
   const handleMenuItemPress = useCallback(
@@ -186,6 +190,7 @@ function StackHeaderConfig(props: StackHeaderConfigProps) {
       {largeSubtitleItem &&
         makeItemViewFromItem(largeSubtitleItem, 'largeSubtitle')}
       {trailingItems?.map(item => makeItemViewFromItem(item, 'trailing'))}
+      {toolbarItems?.map(item => makeItemViewFromItem(item, 'toolbar'))}
     </StackHeaderConfigIOSNativeComponent>
   );
 }
@@ -329,7 +334,13 @@ function makeItemViewFromItem(
   if ('type' in item && item.type === 'spacer') {
     const { id, ...rest } = item;
 
-    if (!(placement === 'leading' || placement === 'trailing')) {
+    if (
+      !(
+        placement === 'leading' ||
+        placement === 'trailing' ||
+        placement === 'toolbar'
+      )
+    ) {
       console.warn(
         `[Stack] Invalid placement for spacer: "${placement}", defaulting to "trailing"`,
       );
