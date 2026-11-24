@@ -567,9 +567,30 @@ export interface StackHeaderButtonAppearanceIOS {
 }
 
 /**
- * Fonts and colors of the header text and the header items.
+ * Bar colors, and fonts and colors of the header text and the header items.
  */
 export interface StackHeaderAppearanceIOS {
+  /**
+   * Specifies the background color of the navigation bar.
+   *
+   * @remarks
+   * Replaces the default background material. Alpha is preserved, so
+   * `transparent` removes this appearance's background. Omit to use UIKit's
+   * default for this appearance. Automatic scroll-edge effects are unaffected.
+   *
+   * @platform ios
+   */
+  backgroundColor?: ColorValue | undefined;
+  /**
+   * Specifies the color of the shadow below the navigation bar.
+   *
+   * @remarks
+   * Use `transparent` to hide the shadow. Omit to use UIKit's default for this
+   * appearance.
+   *
+   * @platform ios
+   */
+  shadowColor?: ColorValue | undefined;
   /**
    * Specifies the font family used for the title of the header.
    *
@@ -908,8 +929,9 @@ export interface StackHeaderConfigPropsIOS {
    * is aligned with the edge of the header.
    *
    * @remarks
-   * When set, it becomes a standalone definition. Whether set or derived, it
-   * keeps transparent background by default (`iOS < 18`).
+   * When set, it becomes a standalone definition, independent of
+   * `standardAppearance`. Whether set or derived, it keeps transparent
+   * background by default, unless `backgroundColor` is set.
    *
    * @info
    * Native platform limitation: on iOS 26, header items resolve the `button` /

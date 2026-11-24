@@ -41,6 +41,8 @@ export type ButtonAppearance = {
 };
 
 export type HeaderAppearance = {
+  backgroundColor?: ProcessedColorValue | null | undefined;
+  shadowColor?: ProcessedColorValue | null | undefined;
   titleFontFamily?: string | undefined;
   titleFontSize?: CT.Float | undefined;
   titleFontWeight?: string | undefined;

@@ -287,6 +287,9 @@ function mapAppearanceToNativeProp(
   return {
     ...appearance,
 
+    backgroundColor: processColor(appearance.backgroundColor),
+    shadowColor: processColor(appearance.shadowColor),
+
     titleFontColor: processColor(appearance.titleFontColor),
     titleFontWeight: toNativeFontWeight(appearance.titleFontWeight),
 
