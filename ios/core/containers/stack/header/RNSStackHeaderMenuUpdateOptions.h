@@ -19,13 +19,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly, nullable) RNSStackHeaderIconData *icon;
 @property (nonatomic, readonly) BOOL hasToggleState;
 @property (nonatomic, readonly) BOOL toggleState;
+@property (nonatomic, readonly) BOOL hasState;
+@property (nonatomic, readonly) UIMenuElementState state;
 
 - (instancetype)initWithTitle:(nullable NSString *)title
                      hasTitle:(BOOL)hasTitle
                          icon:(nullable RNSStackHeaderIconData *)icon
                       hasIcon:(BOOL)hasIcon
                hasToggleState:(BOOL)hasToggleState
-                  toggleState:(BOOL)toggleState;
+                  toggleState:(BOOL)toggleState
+                     hasState:(BOOL)hasState
+                        state:(UIMenuElementState)state;
 
 + (RNSStackHeaderMenuItemData *)applyOptions:(RNSMenuItemUpdateOptions *)options
                                   toMenuItem:(RNSStackHeaderMenuItemData *)old;

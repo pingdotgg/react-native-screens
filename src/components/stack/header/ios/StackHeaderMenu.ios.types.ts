@@ -25,6 +25,11 @@ import type { StackPlatformIconIOS } from '../StackHeaderConfig.ios.types';
 export type StackHeaderMenuItemTypeIOS = 'action' | 'toggle' | 'automatic';
 
 /**
+ * Application-controlled state displayed next to a menu action.
+ */
+export type StackHeaderMenuItemStateIOS = 'off' | 'on' | 'mixed';
+
+/**
  * Represents a single actionable item inside a {@link StackHeaderMenuIOS} menu.
  *
  * @remarks
@@ -91,6 +96,23 @@ export interface StackHeaderMenuItemIOS {
    * @platform ios
    */
   itemType?: StackHeaderMenuItemTypeIOS | undefined;
+  /**
+   * Application-controlled state displayed next to an action.
+   *
+   * @remarks
+   * Applies only when {@link StackHeaderMenuItemIOS.itemType | itemType}
+   * resolves to `'action'`. Tapping the item fires `onPress` without changing
+   * this state or emitting `onSelectionChange`. Update the definition or use
+   * `setMenuItemOptions` to change it.
+   *
+   * Ignored for native toggles, including automatic items under
+   * `singleSelection`. Use `initialToggleState`, selection callbacks, and the
+   * `toggleState` command option for those items.
+   *
+   * @defaultValue `'off'`
+   * @platform ios
+   */
+  state?: StackHeaderMenuItemStateIOS | undefined;
   /**
    * Initial on/off state of a toggle item.
    *

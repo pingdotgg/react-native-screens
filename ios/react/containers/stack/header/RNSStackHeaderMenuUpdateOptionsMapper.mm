@@ -1,5 +1,6 @@
 #import "RNSStackHeaderMenuUpdateOptionsMapper.h"
 #import "RNSStackHeaderIconMapper.h"
+#import "RNSStackHeaderMenuMapper.h"
 
 #pragma mark - Helpers
 
@@ -55,12 +56,18 @@ static RNSStackHeaderIconData *_Nullable RNSResolveIconFromDict(NSDictionary *di
     toggleState = [toggleValue boolValue];
   }
 
+  BOOL hasState = RNSDictHasKey(dict, @"state");
+  UIMenuElementState state =
+      [RNSStackHeaderMenuMapper menuItemStateFromString:RNSResolveStringFromDict(dict, @"state", nil)];
+
   return [[RNSMenuItemUpdateOptions alloc] initWithTitle:title
                                                 hasTitle:hasTitle
                                                     icon:icon
                                                  hasIcon:hasIcon
                                           hasToggleState:hasToggleState
-                                             toggleState:toggleState];
+                                             toggleState:toggleState
+                                                hasState:hasState
+                                                   state:state];
 }
 
 + (RNSMenuUpdateOptions *)menuUpdateOptionsFromDictionary:(NSDictionary *)dict

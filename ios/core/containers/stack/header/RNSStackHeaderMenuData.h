@@ -1,6 +1,7 @@
 #pragma once
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @class RNSStackHeaderIconData;
 
@@ -25,6 +26,10 @@ typedef NS_ENUM(NSInteger, RNSMenuItemType) {
 @property (nonatomic, readonly) BOOL disabled;
 @property (nonatomic, readonly) BOOL destructive;
 @property (nonatomic, readonly) RNSMenuItemType itemType;
+/**
+ * Application-owned state shown next to an action. Ignored for toggles, whose state is tracked natively.
+ */
+@property (nonatomic, readonly) UIMenuElementState state;
 @property (nonatomic, readonly) BOOL initialToggleState;
 @property (nonatomic, readonly) BOOL keepsMenuPresented;
 @property (nonatomic, strong, readonly, nullable) RNSStackHeaderIconData *icon;
@@ -35,6 +40,7 @@ typedef NS_ENUM(NSInteger, RNSMenuItemType) {
                   disabled:(BOOL)disabled
                destructive:(BOOL)destructive
                   itemType:(RNSMenuItemType)itemType
+                     state:(UIMenuElementState)state
         initialToggleState:(BOOL)initialToggleState
         keepsMenuPresented:(BOOL)keepsMenuPresented
                       icon:(nullable RNSStackHeaderIconData *)icon;

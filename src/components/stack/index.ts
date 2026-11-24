@@ -81,6 +81,7 @@ export type {
   StackHeaderMenuIOS,
   StackHeaderMenuItemIOS,
   StackHeaderMenuItemTypeIOS,
+  StackHeaderMenuItemStateIOS,
   StackHeaderMenuElementIOS,
   StackHeaderMenuItemOptionsIOS,
   StackHeaderMenuOptionsIOS,

@@ -10,6 +10,8 @@
                       hasIcon:(BOOL)hasIcon
                hasToggleState:(BOOL)hasToggleState
                   toggleState:(BOOL)toggleState
+                     hasState:(BOOL)hasState
+                        state:(UIMenuElementState)state
 {
   if (self = [super init]) {
     _title = [title copy];
@@ -18,6 +20,8 @@
     _hasIcon = hasIcon;
     _hasToggleState = hasToggleState;
     _toggleState = toggleState;
+    _hasState = hasState;
+    _state = state;
   }
   return self;
 }
@@ -34,6 +38,7 @@
                                                disabled:old.disabled
                                             destructive:old.destructive
                                                itemType:old.itemType
+                                                  state:options.hasState ? options.state : old.state
                                      initialToggleState:old.initialToggleState
                                      keepsMenuPresented:old.keepsMenuPresented
                                                    icon:icon];

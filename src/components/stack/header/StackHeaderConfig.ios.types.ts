@@ -4,7 +4,10 @@ import type {
   StackHeaderElementFactory,
   StackHeaderPressHandler,
 } from './StackHeaderConfig.types';
-import type { StackHeaderMenuIOS } from './ios/StackHeaderMenu.ios.types';
+import type {
+  StackHeaderMenuIOS,
+  StackHeaderMenuItemStateIOS,
+} from './ios/StackHeaderMenu.ios.types';
 
 /**
  * Icon of a header item or a menu element of a Stack header on iOS.
@@ -21,6 +24,16 @@ export type StackPlatformIconIOS = PlatformIconIOS;
  * Omitted keys preserve current values. Explicit `undefined` resets to default.
  */
 export interface StackHeaderMenuItemOptionsIOS {
+  /**
+   * Sets the application-controlled state displayed next to an action.
+   *
+   * @remarks
+   * Applies only when `itemType` resolves to `'action'`. Ignored for native
+   * toggles. Does not emit press or selection callbacks.
+   *
+   * @platform ios
+   */
+  state?: StackHeaderMenuItemStateIOS | undefined;
   /**
    * New title for the menu action.
    *
