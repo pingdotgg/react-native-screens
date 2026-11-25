@@ -46,7 +46,7 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
   RNSStackHeaderConfigShadowStateProxy *_Nonnull _shadowStateProxy;
   RNSStackHeaderConfigEventEmitter *_Nonnull _reactEventEmitter;
   NSMutableArray<id> *_children;
-  BOOL _hasAttachedToWindow;
+  BOOL _hasBuiltHeader;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -165,16 +165,24 @@ static void RNSAssertIsValidHeaderChild(UIView *child)
 {
   if (self.window != nil) {
     [[self requireNavigationController] setNavigationBarFrameChangeDelegate:self];
-    if (_hasAttachedToWindow) {
-      // UIKit is already transitioning the retained screen's bar items. Replacing
-      // them on reattachment starts a second layout inside the moving glass.
+    if (_hasBuiltHeader) {
+      // UIKit is already transitioning the screen's bar items. Replacing them
+      // when the screen enters the window starts a second layout inside the moving glass.
       [self.headerCoordinator applyConfigProperties];
     } else {
       [self.headerCoordinator rebuild];
-      _hasAttachedToWindow = YES;
+      _hasBuiltHeader = YES;
     }
   }
   [super didMoveToWindow];
+}
+
+- (void)didAttachToScreen
+{
+  // The screen is pushed before this view reaches a window. Building only on window attach
+  // starts the push with an empty bar, then moves search and items in mid-transition.
+  [self.headerCoordinator rebuild];
+  _hasBuiltHeader = YES;
 }
 
 #pragma mark - Child mounting

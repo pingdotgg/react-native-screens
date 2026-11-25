@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) RNSStackScreenHeaderCoordinator *headerCoordinator;
 
 - (void)resetProps;
+- (void)didAttachToScreen;
 
 @end
 

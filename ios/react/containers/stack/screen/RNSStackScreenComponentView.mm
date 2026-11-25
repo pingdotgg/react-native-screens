@@ -287,6 +287,9 @@ RNS_IGNORE_SUPER_CALL_END
     _controller.headerCoordinator.imageLoader = _headerConfig.imageLoader;
   }
   [super mountChildComponentView:childComponentView index:index];
+  if (childComponentView == _headerConfig) {
+    [_headerConfig didAttachToScreen];
+  }
 }
 
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
